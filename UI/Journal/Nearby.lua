@@ -361,11 +361,17 @@ local function FilterLabel()
     return f and f.label or ns.L("Everyone")
 end
 
-local function ShowFilterMenu(owner)
-    Style.ChoiceMenu(owner, nil, FILTERS, function() return query.filter end, function(key)
+-- The filter's menu's generator, the mouse's and the pad's
+-- (UI/Journal/NearbyPad.lua) alike.
+local function FilterMenu()
+    return Style.ChoiceGenerator(nil, FILTERS, function() return query.filter end, function(key)
         query.filter = key
         RefreshTable()
     end)
+end
+
+local function ShowFilterMenu(owner)
+    MenuUtil.CreateContextMenu(owner, FilterMenu())
 end
 
 local function PaintHeadings()
@@ -432,6 +438,8 @@ function RefreshTable(keepScroll)
     page.empty:SetText(#list == 0 and ns.L("Nobody matches.") or "")
     page.filter:SetText(FilterLabel())
     PaintHeadings()
+    -- (the pad's rows were handed round: UI/Journal/NearbyPad.lua)
+    ns.UI.Pad.Refresh()
 end
 
 -- Everything: the days, and the chosen day's people rebuilt from the data.
@@ -464,6 +472,7 @@ function ns.UI.RefreshNearbyPage()
     page.right:SetShown(selectedDay ~= nil)
     if not selectedDay then
         cache = nil
+        ns.UI.Pad.Refresh()
         return
     end
 
@@ -484,7 +493,7 @@ local function BuildPage(parent)
     page = {}
 
     -- Left page: the days.
-    page.dayCount = J.PageHeading(parent, ns.L("Recently nearby"))
+    page.dayCount, page.heading = J.PageHeading(parent, ns.L("Recently nearby"))
 
     page.hint = Style.Text(parent, FONT.small)
     page.hint:SetPoint("TOPLEFT", BOOK.LEFT_X, -50)
@@ -516,23 +525,30 @@ local function BuildPage(parent)
 
     page.search = Style.PageSearch(r, 0, -40, 260, ns.L("Search names, zones, subzones"),
         Style.SearchInto(query, RefreshTable))
+    -- (`padAt`: where each control lies on the right page, y down, for the
+    -- pad's left and right between them: UI/Journal/NearbyPad.lua)
+    page.search.holder.padAt = { 130, 52 }
 
     page.filter = Style.Link(r, FONT.body, function(self) ShowFilterMenu(self) end)
     page.filter:SetPoint("RIGHT", r, "TOPRIGHT", 0, -52)
+    page.filter.padAt = { BOOK.RIGHT_W - 30, 52 }
 
     -- Column headings, on the rows' own coordinates.
     page.headings = {}
-    local function Heading(key, text)
+    local function Heading(key, text, x)
+        local link = Style.Link(r, FONT.heading, function() SortBy(key) end)
+    local function Heading(key, text, x)
         local link = Style.Link(r, FONT.heading, function() SortBy(key) end)
         link:SetText(ns.Upper(text))
+        link.padAt = { x, 86 }
         page.headings[key] = link
         return link
     end
-    Heading("level", ns.L("Lvl")):SetPoint("RIGHT", r, "TOPLEFT", LEVEL_RIGHT, -86)
+    Heading("level", ns.L("Lvl"), LEVEL_RIGHT - 10):SetPoint("RIGHT", r, "TOPLEFT", LEVEL_RIGHT, -86)
     page.headings.level.alignRight = true
-    Heading("name", ns.L("Name")):SetPoint("LEFT", r, "TOPLEFT", NAME_X, -86)
-    Heading("zone", ns.L("Zone")):SetPoint("LEFT", r, "TOPLEFT", ZONE_X, -86)
-    Heading("subzone", ns.L("Subzone")):SetPoint("LEFT", r, "TOPLEFT", SUBZONE_X, -86)
+    Heading("name", ns.L("Name"), NAME_X + 20):SetPoint("LEFT", r, "TOPLEFT", NAME_X, -86)
+    Heading("zone", ns.L("Zone"), ZONE_X + 20):SetPoint("LEFT", r, "TOPLEFT", ZONE_X, -86)
+    Heading("subzone", ns.L("Subzone"), SUBZONE_X + 20):SetPoint("LEFT", r, "TOPLEFT", SUBZONE_X, -86)
 
     page.arrow = r:CreateTexture(nil, "ARTWORK")
     page.arrow:SetSize(9, 8)
@@ -549,9 +565,25 @@ local function BuildPage(parent)
     page.empty = Style.Text(r, FONT.faded)
     page.empty:SetPoint("TOPLEFT", 4, -TABLE_TOP - 8)
 
+    -- For the pad (UI/Journal/NearbyPad.lua): the query, and how a heading
+    -- sorts at its first click.
+    page.query, page.firstDir = query, FIRST_DIR
+
     ns.UI.NearbyPage = page  -- test hook: the page, once built
     return page
 end
+
+-- For the pad (UI/Journal/NearbyPad.lua): the day shown, and showing
+-- another, as a day's click does; the filter's menu.
+J.Nearby = {
+    Day = function() return selectedDay end,
+    -- (the filter menu's generator, the mouse's own, for the pad's menu)
+    FilterMenu = FilterMenu,
+    ShowDay = function(start)
+        selectedDay = start
+        ns.UI.RefreshNearbyPage()
+    end,
+}
 
 -- The purple ribbon's page, second from the back (JNL-3;
 -- UI/Journal/Pages.lua). It reads live data, so it is brought up to date
@@ -560,4 +592,5 @@ ns.UI.Journal.RegisterPage("nearby", {
     order = 30, ribbon = { colour = "purple", label = ns.L("Recently nearby") }, leaf = -2, buildOrder = 50,
     build = function(container) BuildPage(container) end,
     refresh = function() ns.UI.RefreshNearbyPage() end,
+    title = function() return page and page.heading end,
 })

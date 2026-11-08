@@ -117,6 +117,9 @@ local function RefreshList(keepScroll)
     J.journal.sortButton:SetText(SortLabel())
     J.journal.filterButton:SetText(#filters == 0 and ns.L("All people") or Count(#filters, "filter", "filters"))
     J.journal.filters:SetText(#filters > 0 and table.concat(filters, "  ·  ") or "")
+    -- The pad's rows were handed round (UI/Journal/PeoplePad.lua); with
+    -- the pad down this does nothing.
+    ns.UI.Pad.Refresh()
 end
 
 local function BuildPersonRow(list)
@@ -178,15 +181,21 @@ end
 
 -- The sort is a preference, so it is saved and outlives the login; the
 -- search and filters are not.
+local function SetSort(key)
+    J.query.sort = key
+    ns.SetSetting("peopleSort", key)
+    RefreshList()
+end
+
+-- The sort's menu as MenuUtil's generator, for the mouse's menu and the
+-- pad's (UI/Pad/Menu.lua runs the same one), so the two never differ.
+local function SortMenu(_, root)
+    root:CreateTitle(ns.L("Sort by"))
+    Style.Choices(root, ns.People.SORTS, function() return J.query.sort end, SetSort)
+end
+
 local function ShowSortMenu(owner)
-    MenuUtil.CreateContextMenu(owner, function(_, root)
-        root:CreateTitle(ns.L("Sort by"))
-        Style.Choices(root, ns.People.SORTS, function() return J.query.sort end, function(key)
-            J.query.sort = key
-            ns.SetSetting("peopleSort", key)
-            RefreshList()
-        end)
-    end)
+    MenuUtil.CreateContextMenu(owner, SortMenu)
 end
 
 -- The saved sort, if it is still one the list knows (a hand-edited file or
@@ -197,10 +206,12 @@ local function SavedSort()
     return ns.SettingDefault("peopleSort")
 end
 
-local function ShowFilterMenu(owner)
+-- The filter's menu's generator (the facets as they are now), for the
+-- mouse's menu and the pad's alike.
+local function FilterMenu()
     local facets = ns.People.Facets()
 
-    MenuUtil.CreateContextMenu(owner, function(_, root)
+    return function(_, root)
         root:CreateButton(ns.L("Clear filters"), function()
             J.query.tag, J.query.relationship, J.query.faction, J.query.zone, J.query.withinDays =
                 nil, nil, nil, nil, nil
@@ -218,7 +229,11 @@ local function ShowFilterMenu(owner)
             within[#within + 1] = { label = option.label, key = option.days }
         end
         Field(root:CreateButton(ns.L("Last met")), "withinDays", within)
-    end)
+    end
+end
+
+local function ShowFilterMenu(owner)
+    MenuUtil.CreateContextMenu(owner, FilterMenu())
 end
 
 --------------------------------------------------------------------------
@@ -228,7 +243,7 @@ end
 local function BuildLeftPage(panel, book)
     J.query.sort = SavedSort()
 
-    panel.count = J.PageHeading(book, ns.L("People"))
+    panel.count, panel.peopleTitle = J.PageHeading(book, ns.L("People"))
 
     panel.search = Style.PageSearch(book, LEFT_X, -48, LEFT_W, ns.L("Search names, tags, notes"),
         Style.SearchInto(J.query, RefreshList))
@@ -261,8 +276,11 @@ local function BuildLeftPage(panel, book)
         panel.filters, panel.people }
 end
 
--- For the book, which refreshes it (UI/Journal/Book.lua).
-J.RefreshList = RefreshList
+-- For the book, which refreshes it (UI/Journal/Book.lua); the sort as its
+-- menu sets it, for the pad's left and right on it (UI/Journal/PeoplePad.lua).
+J.RefreshList, J.SetSort = RefreshList, SetSort
+-- (the menus' generators, for the pad's menu: UI/Journal/PeoplePad.lua)
+J.SortMenu, J.FilterMenu = SortMenu, FilterMenu
 
 -- The red ribbon's page, second in the book (UI/Journal/Pages.lua): the
 -- list on the left page, the selected person's page on the right
@@ -277,6 +295,7 @@ J.RefreshList = RefreshList
 J.RegisterPage("people", {
     order = 20, ribbon = { colour = "red", label = ns.L("People") }, leaf = 2, buildOrder = 10,
     leaves = function() return J.EntryLeaf(J.selected) end,
+    title = function() return J.journal and J.journal.peopleTitle end,
     build = function(people, panel)
         BuildLeftPage(panel, people)
         panel.profile = J.BuildProfile(panel, people)
