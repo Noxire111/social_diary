@@ -20,8 +20,8 @@ local function Foes(call)
     local name = Text.KillerName(call)
     if not name then return nil end
     local more = (call.foes or 1) - 1
-    if more == 1 then return name .. " and another" end
-    if more > 1 then return name .. " and " .. (NUMBER[more] or tostring(more)) .. " others" end
+    if more == 1 then return ns.LF("%s and another", name) end
+    if more > 1 then return ns.LF("%s and %s others", name, NUMBER[more] or tostring(more)) end
     return name
 end
 
@@ -30,7 +30,7 @@ end
 -- health."
 function CloseCalls.Sentence(call)
     local foes = Foes(call)
-    return (foes and ("Got away from " .. foes) or "Got out of a fight") .. " with " .. Health(call) .. "."
+    return foes and ns.LF("Got away from %s with %s.", foes, Health(call)) or ns.LF("Got out of a fight with %s.", Health(call))
 end
 
 -- A close call's creature's level and rank, as its card's tag says them
@@ -38,11 +38,11 @@ end
 -- "Lv 12" for a common creature, the rank alone where no level was kept
 -- ("Elite"); nil with neither. The fight's length is never told: it said
 -- nothing (11 Oct).
-local TAG = { elite = "Elite", rare = "Rare", rareelite = "Rare Elite", worldboss = "Boss" }
+local TAG = { elite = ns.L("Elite"), rare = ns.L("Rare"), rareelite = ns.L("Rare Elite"), worldboss = ns.L("Boss") }
 
 function CloseCalls.Tag(call)
     local level = call and call.foeLevel
-    local lv = level == -1 and "Lv ??" or (type(level) == "number" and level > 0 and ("Lv " .. level)) or nil
+    local lv = level == -1 and ns.L("Lv ??") or (type(level) == "number" and level > 0 and ns.LF("Lv %s", level)) or nil
     local rank = call and TAG[call.rank]
     if lv and rank then return lv .. " (" .. rank .. ")" end
     return lv or rank
@@ -52,14 +52,14 @@ end
 -- diary's hand (Card.lua's SetFoe), and its cross's tooltip's title, so
 -- the card and the mark it points to read as one thing.
 function CloseCalls.Heading()
-    return "A close call"
+    return ns.L("A close call")
 end
 
 -- A close call's cross on a plate, for its tooltip: "A close call", then
 -- what with, its level and rank, when.
 function CloseCalls.Tip(call, now)
     local foes = Foes(call)
-    local lines = { (call.pct or 0) .. "% health left" .. (foes and (", against " .. foes) or "") }
+    local lines = { foes and ns.LF("%s%% health left, against %s", call.pct or 0, foes) or ns.LF("%s%% health left", call.pct or 0) }
     if foes then lines[#lines + 1] = CloseCalls.Tag(call) end
     lines[#lines + 1] = When(call.t, call.level, now)
     return CloseCalls.Heading(), lines
@@ -71,16 +71,16 @@ end
 function CloseCalls.Deed(call)
     local foes = call.foes or 1
     if foes <= 1 then return "" end
-    return "fought against " .. (NUMBER[foes] or tostring(foes))
+    return ns.LF("fought against %s", NUMBER[foes] or tostring(foes))
 end
 
 function CloseCalls.FoeTip(call, now)
     local lines = { CloseCalls.Tag(call) }
-    lines[#lines + 1] = "Left you with " .. (call.pct or 0) .. "% health"
+    lines[#lines + 1] = ns.LF("Left you with %s%% health", call.pct or 0)
     local more = (call.foes or 1) - 1
     if more > 0 then
-        lines[#lines + 1] = more == 1 and "One more was in the fight"
-            or (Capital(NUMBER[more] or tostring(more)) .. " more were in the fight")
+        lines[#lines + 1] = more == 1 and ns.L("One more was in the fight")
+            or ns.LF("%s more were in the fight", Capital(NUMBER[more] or tostring(more)))
     end
     lines[#lines + 1] = When(call.t, call.level, now)
     return call.name, lines
@@ -102,7 +102,7 @@ function CloseCalls.Lines(e)
     for i = 1, math.min(#calls, PROSE.most) do parts[#parts + 1] = CloseCalls.Sentence(calls[i]) end
     local more = #calls - PROSE.most
     if more > 0 then
-        parts[#parts + 1] = more == 1 and "And one more close call." or ("And %s more close calls."):format(
+        parts[#parts + 1] = more == 1 and ns.L("And one more close call.") or ns.LF("And %s more close calls.",
             NUMBER[more] or tostring(more))
     end
     if #parts == 0 then return nil end
@@ -130,16 +130,16 @@ Text.RegisterLines("close", { at = 70, run = "combat", lines = function(e) retur
 local function Calls(calls, c)
     if #calls == 1 then
         local name = not c.said.close and Text.KillerName(calls[1])
-        return name and ("a close call with " .. name) or "a close call"
+        return name and ns.LF("a close call with %s", name) or ns.L("a close call")
     end
-    return (NUMBER[#calls] or tostring(#calls)) .. " close calls"
+    return ns.LF("%s close calls", NUMBER[#calls] or tostring(#calls))
 end
 
 Text.RegisterCaption("close", {
     moment = "close",
     take = function(m) return m.call end,
     lead = { at = 60, say = function(calls, c)
-        if #calls == 1 then return c.said.close and "A close call" or CloseCalls.Sentence(calls[1]):sub(1, -2) end
+        if #calls == 1 then return c.said.close and ns.L("A close call") or CloseCalls.Sentence(calls[1]):sub(1, -2) end
         return Capital(Calls(calls, c))
     end },
     tail = { at = 50, say = Calls },

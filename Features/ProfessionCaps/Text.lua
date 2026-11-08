@@ -12,31 +12,31 @@ local Capital, When, NUMBER = Text.Capital, Text.When, Text.NUMBER
 -- Who a cap is as far as the training goes: each rank's trainer's title,
 -- with its article. Any other number (a cap the client adds later) is
 -- told bare, without the clause.
-local SKILL_RANK = { [75] = "an Apprentice", [150] = "a Journeyman", [225] = "an Expert", [300] = "an Artisan" }
+local SKILL_RANK = { [75] = ns.L("an Apprentice"), [150] = ns.L("a Journeyman"), [225] = ns.L("an Expert"), [300] = ns.L("an Artisan") }
 
 -- The profession as the client called it, or "a profession" where it gave
 -- no name.
 local function Trade(cap)
-    return cap.name and cap.name ~= "" and cap.name or "a profession"
+    return cap.name and cap.name ~= "" and cap.name or ns.L("a profession")
 end
 
 -- The cap reached, as a number to say after "at": "75"; "its cap" where
 -- the record has none.
 local function Rank(cap)
-    return cap.rank and tostring(cap.rank) or "its cap"
+    return cap.rank and tostring(cap.rank) or ns.L("its cap")
 end
 
 -- A cap in a few words, for a plate's caption: "First Aid at 75", "a
 -- profession at 75".
 function ProfessionCaps.Words(cap)
-    return Trade(cap) .. " at " .. Rank(cap)
+    return ns.LF("%s at %s", Trade(cap), Rank(cap))
 end
 
 -- How far the training goes, after a comma: "as far as an Apprentice
 -- goes"; nil for a rank with no trainer's title.
 local function AsFar(cap)
     local who = SKILL_RANK[cap.rank]
-    return who and ("as far as " .. who .. " goes") or nil
+    return who and ns.LF("as far as %s goes", who) or nil
 end
 
 -- A cap in a sentence: "First Aid reached 75, as far as an Apprentice
@@ -45,9 +45,10 @@ end
 function ProfessionCaps.Sentence(cap, before)
     local again = before and (before.skillLine or before.name) == (cap.skillLine or cap.name)
         and (cap.skillLine or cap.name) ~= nil
-    local text = again and ("Then " .. Rank(cap)) or (Capital(Trade(cap)) .. " reached " .. Rank(cap))
+    local text = again and ns.LF("Then %s", Rank(cap)) or ns.LF("%s reached %s", Capital(Trade(cap)), Rank(cap))
     local far = AsFar(cap)
-    return text .. (far and (", " .. far) or "") .. "."
+    if far then text = ns.LF("%s, %s", text, far) end
+    return text .. "."
 end
 
 -- The level's caps in its prose, one sentence each.
@@ -87,9 +88,9 @@ local function Capped(caps)
         local key = cap.skillLine or cap.name or cap
         if not seen[key] then seen[key], trades = true, trades + 1 end
     end
-    if trades > 1 then return (NUMBER[trades] or tostring(trades)) .. " professions at their cap" end
+    if trades > 1 then return ns.LF("%s professions at their cap", NUMBER[trades] or tostring(trades)) end
     local text = ProfessionCaps.Words(caps[1])
-    for k = 2, #caps do text = text .. ", then " .. (caps[k].rank or "its cap") end
+    for k = 2, #caps do text = ns.LF("%s, then %s", text, caps[k].rank or ns.L("its cap")) end
     return text
 end
 

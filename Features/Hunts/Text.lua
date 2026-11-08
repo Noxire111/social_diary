@@ -33,8 +33,8 @@ function Hunts.Words(hunt)
     local kills = hunt.kills or 0
     local what = hunt.name and hunt.name ~= "" and (kills == 1 and hunt.name or Plural(hunt.name))
         or (kills == 1 and "kill" or "kills")
-    if Kinds(hunt) > 1 and hunt.name and hunt.name ~= "" then what = what .. " and others" end
-    return Count(kills, what) .. " for " .. Items(hunt.need or 0, hunt.item or "drop")
+    if Kinds(hunt) > 1 and hunt.name and hunt.name ~= "" then what = ns.LF("%s and others", what) end
+    return ns.L("%s for %s", "Features"):format(Count(kills, what), Items(hunt.need or 0, hunt.item or ns.L("drop")))
 end
 
 -- How far a hunt was from what the drop rates said (EXT-2, EXT-3): ", 14
@@ -44,7 +44,7 @@ function Hunts.ExpectedWords(hunt)
     if not hunt.expected then return "" end
     local off = math.floor((hunt.kills or 0) - hunt.expected + 0.5)
     if off == 0 then return "" end
-    return ", " .. Count(math.abs(off), off > 0 and "more than expected" or "fewer than expected")
+    return ns.LF(", %s", Count(math.abs(off), ns.L(off > 0 and "more than expected" or "fewer than expected")))
 end
 
 -- The hunt with it: "31 Plainstriders for 7 Plainstrider Meat, 14 more
@@ -82,7 +82,7 @@ function Hunts.Tip(hunt, now)
         for _, k in ipairs(kinds) do parts[#parts + 1] = Killed(k.n, k.name) end
         lines[#lines + 1] = table.concat(parts, ", ")
     end
-    if hunt.title and hunt.title ~= "" then lines[#lines + 1] = "For " .. hunt.title end
+    if hunt.title and hunt.title ~= "" then lines[#lines + 1] = ns.LF("For %s", hunt.title) end
     lines[#lines + 1] = When(hunt.t, hunt.level, now)
     return Hunts.Line(hunt), lines
 end
@@ -107,8 +107,8 @@ Hunts.KILLED = "killed"
 -- may give no figure: it says only what they said, "expected more", and makes
 -- no number up.
 function Hunts.ExpectedLabel(hunt)
-    if not hunt.expected then return "expected more" end
-    return "expected " .. math.floor((hunt.expected or 0) + 0.5)
+    if not hunt.expected then return ns.L("expected more") end
+    return ns.LF("expected %d", math.floor((hunt.expected or 0) + 0.5))
 end
 
 -- The rows of a hunt without drop rates: its kills an item, "each", and
@@ -140,7 +140,7 @@ function Hunts.KillLines(hunt, short)
         if shown < #kinds then
             local rest = 0
             for i = shown + 1, #kinds do rest = rest + kinds[i].n end
-            lines[#lines + 1] = Hunts.KILLED .. " " .. Count(rest, rest == 1 and "other" or "others")
+            lines[#lines + 1] = Hunts.KILLED .. " " .. Count(rest, ns.L(rest == 1 and "other" or "others"))
         end
         if not rates then lines[#lines] = For(lines[#lines]) end
         return lines
@@ -148,9 +148,9 @@ function Hunts.KillLines(hunt, short)
     local others = #kinds > 1 and named
     if rates then
         if not named then return {} end
-        return { Plural(hunt.name) .. (others and " and others" or "") }
+        return { Plural(hunt.name) .. (others and ns.L(" and others") or "") }
     end
-    local what = Killed(kills, named and hunt.name or nil) .. (others and " and others" or "")
+    local what = Killed(kills, named and hunt.name or nil) .. (others and ns.L(" and others") or "")
     if not named then what = tostring(kills) end
     return { For(Hunts.KILLED .. " " .. what) }
 end
@@ -160,7 +160,7 @@ end
 function Hunts.CardTip(hunt, now, usual)
     local title, lines = Hunts.Tip(hunt, now)
     if not hunt.expected and usual then
-        table.insert(lines, #lines, "Usually " .. math.max(1, math.floor(usual + 0.5)) .. " each")
+        table.insert(lines, #lines, ns.LF("Usually %d each", math.max(1, math.floor(usual + 0.5))))
     end
     return title, lines
 end
@@ -173,14 +173,13 @@ function Hunts.Fortune(hunt)
     if hunt.kills == 1 and hunt.need == 1 and hunt.name and hunt.name ~= "" and Kinds(hunt) <= 1 then
         -- One the player wrote may have no figure to set it against.
         if not hunt.expected then
-            return "The first " .. hunt.name .. " gave up its " .. (hunt.item or "drop") .. "."
+            return ns.LF("The first %s gave up its %s.", hunt.name, hunt.item or ns.L("drop"))
         end
         local expected = math.floor(hunt.expected + 0.5)
-        return "The first " .. hunt.name .. " gave up its " .. (hunt.item or "drop") .. ", where "
-            .. Count(expected, "were expected") .. "."
+        return ns.LF("The first %s gave up its %s, where %s.", hunt.name, hunt.item or ns.L("drop"), Count(expected, ns.L("were expected")))
     end
-    local words = Hunts.Words(hunt):gsub(" for ", " to get ", 1)
-    return "It took only " .. words .. Hunts.ExpectedWords(hunt) .. "."
+    local words = Hunts.Words(hunt):gsub(ns.L(" for "), ns.L(" to get "), 1)
+    return ns.LF("It took only %s%s.", words, Hunts.ExpectedWords(hunt))
 end
 
 -- The lucky card (LuckyCard.lua, JRN-27): good luck in the margin, the
@@ -195,9 +194,9 @@ end
 -- Returns the words and the count's own words (for the underline at S).
 local function SoonWords(hunt, just)
     local kills = hunt.kills or 0
-    if kills <= 1 then return "on the first", "first" end
-    local count = kills <= 10 and WORDS[kills] or Count(kills, "kills")
-    return (just and "after just " or "after ") .. count, count
+    if kills <= 1 then return ns.L("on the first"), ns.L("first", "Features") end
+    local count = kills <= 10 and WORDS[kills] or Count(kills, ns.L("kills"))
+    return ns.LF(just and "after just %s" or "after %s", count), count
 end
 
 -- The tag's lines for one of the card's forms (LuckyCard's FORMS): a list
@@ -217,7 +216,7 @@ function Hunts.LuckyTag(hunt, form)
     local soon, count = SoonWords(hunt, LUCKY_JUST[form])
     if form == "S" then return { { text = soon, under = count } } end
     if form == "S-" then
-        if (hunt.kills or 0) <= 1 then return { { text = "the first", under = "first" } } end
+        if (hunt.kills or 0) <= 1 then return { { text = ns.L("the first"), under = ns.L("first", "Features") } } end
         return { { text = count, under = count } }
     end
     local D = Hunts.LUCKY_DROPPED
@@ -232,7 +231,7 @@ end
 function Hunts.LuckyKind(hunt)
     if not (hunt.name and hunt.name ~= "") then return nil end
     local name = (hunt.kills or 0) == 1 and hunt.name or Plural(hunt.name)
-    return Kinds(hunt) > 1 and (name .. " and others") or name
+    return Kinds(hunt) > 1 and ns.LF("%s and others", name) or name
 end
 
 -- The caption's words while the luck is told on its print (the card's S,
@@ -240,10 +239,10 @@ end
 -- the print. "7 Kolkar Booty Keys from Kolkar Marauders"; one item,
 -- "Hezrul's Head from Hezrul Bloodmark"; nameless, the item alone.
 function Hunts.LuckyCaption(hunt)
-    local need, item = hunt.need or 0, hunt.item or "a drop"
+    local need, item = hunt.need or 0, hunt.item or ns.L("a drop")
     local what = need > 1 and Count(need, ItemWord(need, item)) or item
     local kind = Hunts.LuckyKind(hunt)
-    return kind and (what .. " from " .. kind) or what
+    return kind and ns.L("%s from %s", "Features"):format(what, kind) or what
 end
 
 -- The level's luck in its prose: each hunt that was bad luck ("It took
@@ -258,19 +257,19 @@ function Hunts.Lines(e)
     local hunts = e.hunts or {}
     for i = 1, math.min(#hunts, COMBAT.most) do
         local h = hunts[i]
-        local words = Hunts.Words(h):gsub(" for ", " to get ", 1)
-        parts[#parts + 1] = "It took " .. words .. Hunts.ExpectedWords(h) .. "."
+        local words = Hunts.Words(h):gsub(ns.L(" for "), ns.L(" to get "), 1)
+        parts[#parts + 1] = ns.LF("It took %s%s.", words, Hunts.ExpectedWords(h))
     end
     local more = #hunts - COMBAT.most
     if more > 0 then
-        parts[#parts + 1] = more == 1 and "And one more slow hunt." or ("And %s more slow hunts."):format(
+        parts[#parts + 1] = more == 1 and ns.L("And one more slow hunt.") or ns.LF("And %s more slow hunts.",
             NUMBER[more] or tostring(more))
     end
     local fortunes = e.fortunes or {}
     for i = 1, math.min(#fortunes, COMBAT.most) do parts[#parts + 1] = Hunts.Fortune(fortunes[i]) end
     more = #fortunes - COMBAT.most
     if more > 0 then
-        parts[#parts + 1] = more == 1 and "And one more lucky hunt." or ("And %s more lucky hunts."):format(
+        parts[#parts + 1] = more == 1 and ns.L("And one more lucky hunt.") or ns.LF("And %s more lucky hunts.",
             NUMBER[more] or tostring(more))
     end
     if #parts == 0 then return nil end
@@ -300,7 +299,7 @@ Text.RegisterLines("hunts", { at = 75, run = "combat", lines = function(e) retur
 -- a set, as there may be several.
 do
     local function Hunted(hunts)
-        return #hunts == 1 and Hunts.Line(hunts[1]) or ((NUMBER[#hunts] or tostring(#hunts)) .. " slow hunts")
+        return #hunts == 1 and Hunts.Line(hunts[1]) or ns.LF("%s slow hunts", NUMBER[#hunts] or tostring(#hunts))
     end
     Text.RegisterCaption("luck", {
         moment = "luck",
@@ -331,7 +330,7 @@ do
         local told = lucky and lucky.hunt
         if not told then
             return { #fortunes == 1 and Hunts.Line(fortunes[1])
-                or ((NUMBER[#fortunes] or tostring(#fortunes)) .. " lucky hunts") }
+                or ns.LF("%s lucky hunts", NUMBER[#fortunes] or tostring(#fortunes)) }
         end
         local words, more = {}, 0
         for _, hunt in ipairs(fortunes) do
@@ -339,9 +338,9 @@ do
         end
         if lucky.print then words[1] = Hunts.LuckyCaption(told) end
         if more == 1 then
-            words[#words + 1] = "another lucky hunt"
+            words[#words + 1] = ns.L("another lucky hunt")
         elseif more > 1 then
-            words[#words + 1] = (NUMBER[more] or tostring(more)) .. " more lucky hunts"
+            words[#words + 1] = ns.LF("%s more lucky hunts", NUMBER[more] or tostring(more))
         end
         return words
     end

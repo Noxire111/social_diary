@@ -27,7 +27,7 @@ PersonText.GATES = 2
 
 -- What the note slip says before there is a note: today's line, kept, as
 -- Edit is still there to click.
-PersonText.NO_NOTE = "No note yet. Click Edit to write one."
+PersonText.NO_NOTE = ns.L("No note yet. Click Edit to write one.")
 
 -- Your Diary's words (UI/Journey/Text/), loaded before this file is ever
 -- asked, looked up when called.
@@ -38,10 +38,11 @@ local function JText() return ns.UI.JourneyText end
 -- year once it is not this one's; `short`, the month cut to three letters
 -- ("11 Oct 2025"), the fitter's fallback where the long form will not fit.
 local function Day(t, now, short)
-    local label = Format.DayLabel(t, now)
-    if label == "Today" or label == "Yesterday" then return label:lower() end
+    local back = Format.DayBack(t, now)
+    if back == 0 then return ns.L("today") end
+    if back == 1 then return ns.L("yesterday") end
     if not short then return Format.DayMonth(t, now) end
-    local text = tonumber(date("%d", t)) .. date(" %b", t)
+    local text = tonumber(date("%d", t)) .. ns.LDate(" %b", t)
     if date("%Y", t) ~= date("%Y", now) then text = text .. date(" %Y", t) end
     return text
 end
@@ -58,14 +59,14 @@ function PersonText.FirstMet(s, now)
     local seen = s.record and s.record.seen
     local sub
     if met then
-        sub = s.levelThen and ("at level " .. s.levelThen) or nil
+        sub = s.levelThen and ns.LF("at level %s", s.levelThen) or nil
     elseif seen then
-        sub = "last seen " .. Day(seen.time, now, true)
+        sub = ns.LF("last seen %s", Day(seen.time, now, true))
     end
     local t = met and s.firstMet or s.entry.addedAt
-    if not t then return met and "First met" or "Added to the diary", nil, sub end
-    local lead = met and "First met " or "Added "
-    local long, short = lead .. Day(t, now), lead .. Day(t, now, true)
+    if not t then return met and ns.L("First met") or ns.L("Added to the diary"), nil, sub end
+    local lead = met and "First met %s" or "Added %s"
+    local long, short = ns.LF(lead, Day(t, now)), ns.LF(lead, Day(t, now, true))
     if short == long then short = nil end
     return long, short, sub
 end
@@ -82,11 +83,11 @@ function PersonText.Tally(s)
     local seconds = s.seconds or 0
     local together
     if seconds >= 60 then
-        together = Format.Duration(seconds) .. " together"
+        together = ns.LF("%s together", Format.Duration(seconds))
     elseif seconds > 0 then
-        together = "under a minute together"
+        together = ns.L("under a minute together")
     end
-    return "Met " .. Format.Times(n), math.min(n, PersonText.GATES * 5), together
+    return ns.LF("Met %s", Format.Times(n)), math.min(n, PersonText.GATES * 5), together
 end
 
 -- Where they were last seen, as one line of a tooltip: "Last seen today at
@@ -105,8 +106,8 @@ function PersonText.TallyTip(s, now)
     now = now or ns.Now()
     local heading = PersonText.Tally(s)
     if not heading then return nil end
-    local lines = { "Each time you grouped, traded or talked nearby" }
-    if s.lastMet then lines[#lines + 1] = "Last met " .. Format.At(s.lastMet, now) end
+    local lines = { ns.L("Each time you grouped, traded or talked nearby") }
+    if s.lastMet then lines[#lines + 1] = ns.LF("Last met %s", Format.At(s.lastMet, now)) end
     lines[#lines + 1] = PersonText.Seen(s, now)
     return heading, lines
 end
@@ -132,12 +133,12 @@ end
 function PersonText.LevelTip(s)
     local before, after = PersonText.Level(s)
     if not before then return nil end
-    return "Their level", { before .. " when you first met", after .. " now" }
+    return ns.L("Their level"), { ns.LF("%s when you first met", before), ns.LF("%s now", after) }
 end
 
 -- The plate's tooltip, over the print outside a mark: one name for one
 -- thing, the side tab's (UI/Journal/Profile.lua).
-PersonText.PLATE = { "Where you saw them", { "Click to open the map." } }
+PersonText.PLATE = { ns.L("Where you saw them"), { ns.L("Click to open the map.") } }
 
 --------------------------------------------------------------------------
 -- The plate's marks
@@ -155,26 +156,26 @@ function PersonText.MetTip(words, t, now)
     local lines = {}
     if words and words ~= "" then lines[1] = words end
     lines[#lines + 1] = When(t, now)
-    return "Where you first met", lines
+    return ns.L("Where you first met"), lines
 end
 function PersonText.AddedTip(t, now)
-    return "Added to the diary", { When(t, now) }
+    return ns.L("Added to the diary"), { When(t, now) }
 end
 
 -- Their first sighting, in hindsight.
 function PersonText.FirstSeenTip(t, now)
-    return "First seen", { When(t, now) }
+    return ns.L("First seen"), { When(t, now) }
 end
 
 -- Time together (a session's ring): "Together for 1 h 5 min", when.
 function PersonText.TogetherTip(seconds, t, now)
-    local title = (seconds or 0) >= 60 and ("Together for " .. Format.Duration(seconds)) or "Together"
+    local title = (seconds or 0) >= 60 and ns.LF("Together for %s", Format.Duration(seconds)) or ns.L("Together")
     return title, { When(t, now) }
 end
 
 -- A word said within earshot: "They said", the words between the book's
 -- curly quotes, when.
-local SAID = { say = "They said", yell = "They yelled" }
+local SAID = { say = ns.L("They said"), yell = ns.L("They yelled") }
 local OPEN, CLOSE = "\226\128\156", "\226\128\157"
 
 -- A row on the plate (a trade, a /say, a fight, a feature's): its words.
@@ -190,8 +191,8 @@ function PersonText.RowTip(row, guid, now)
     if spec.fight == "kill" then
         title = ns.UI.Format.You(row.me, c.by and "{Your} group killed them" or "{You} killed them")
     elseif spec.fight == "death" then
-        title = "They" .. ns.UI.Format.You(row.me, c.probable and " probably killed {you}" or " killed {you}")
-        if c.spell then lines[1] = "With " .. c.spell end
+        title = ns.UI.Format.You(row.me, c.probable and "They probably killed {you}" or "They killed {you}")
+        if c.spell then lines[1] = ns.LF("With %s", c.spell) end
     elseif SAID[row.type] then
         title = SAID[row.type]
         local said = row.excerpt and JText().Written(row.excerpt)
@@ -199,7 +200,7 @@ function PersonText.RowTip(row, guid, now)
     elseif spec.text then
         title = spec.text(row, guid)
         -- The place is the map's to say.
-        if row.zone then title = title:gsub(" in " .. row.zone:gsub("%p", "%%%0") .. "$", "") end
+        if row.zone then title = title:gsub(ns.LF(" in %s", row.zone):gsub("%p", "%%%0") .. "$", "") end
     else
         title = row.type
     end
@@ -214,18 +215,18 @@ function PersonText.NoteTip(note, guid, now)
     local lines = { Text.Written(note.text) }
     local others = {}
     for about in pairs(note.about or {}) do
-        if about ~= guid then others[#others + 1] = Text.Who(about) or "someone" end
+        if about ~= guid then others[#others + 1] = Text.Who(about) or ns.L("someone") end
     end
     table.sort(others)
-    if #others > 0 then lines[#lines + 1] = "Also about " .. Text.List(others) end
+    if #others > 0 then lines[#lines + 1] = ns.LF("Also about %s", Text.List(others)) end
     lines[#lines + 1] = When(note.time, now)
-    return "Your note", lines
+    return ns.L("Your note"), lines
 end
 
 -- A dungeon's door: its name (it says what the door is, not where),
 -- how long inside, when.
 function PersonText.DoorTip(name, seconds, t, now)
-    return name or "An instance", { Format.Duration(seconds or 0) .. " inside", When(t, now) }
+    return name or ns.L("An instance"), { ns.LF("%s inside", Format.Duration(seconds or 0)), When(t, now) }
 end
 
 -- Where they were last seen: when, and the place as every place is
@@ -235,13 +236,13 @@ function PersonText.SeenTip(seen, now)
     local place = seen.zone
     if place and seen.subZone and seen.subZone ~= seen.zone then place = seen.subZone .. ", " .. place end
     if place then lines[#lines + 1] = place end
-    return "Last seen", lines
+    return ns.L("Last seen"), lines
 end
 
 -- Anything else on the timeline put on the plate (a rare killed, a while
 -- seen around): its timeline words and when.
 function PersonText.ItemTip(words, t, now)
-    return words or "Together", { When(t, now) }
+    return words or ns.L("Together"), { When(t, now) }
 end
 
 --------------------------------------------------------------------------
@@ -275,30 +276,30 @@ end
 --   seenDays   the seen line's day count, before Format.SeenText
 --   until      the foot strip's name; `words` under it; `add` its link
 PersonText.GLIMPSE = {
-    notYet = "Not in your diary yet",
-    click = "Click to see their page, pencilled in",
-    first = "First seen",
-    after = "After that",
-    moments = "Moments later",
-    nextDay = "The next day",
-    dayBefore = "The day before",
-    later = "%s later", earlier = "%s earlier",
-    daysLater = "%d days later", daysEarlier = "%d days earlier",
-    levels = "you at level %d, they at %d", mine = "at level %d",
-    beside = "in %s", stood = "you were in %s",
-    joinLevels = "%s  \194\183  %s",
-    more = "and %d more",
-    seenDays = "Seen on %d days since %s. ",
-    ["until"] = "Pencilled in until %s",
-    words = "Strangers are forgotten after %s. Once in your diary, all of this is kept for good.",
-    add = "Add %s to your diary",
+    notYet = ns.L("Not in your diary yet"),
+    click = ns.L("Click to see their page, pencilled in"),
+    first = ns.L("First seen"),
+    after = ns.L("After that"),
+    moments = ns.L("Moments later"),
+    nextDay = ns.L("The next day"),
+    dayBefore = ns.L("The day before"),
+    later = ns.L("%s later"), earlier = ns.L("%s earlier"),
+    daysLater = ns.L("%d days later"), daysEarlier = ns.L("%d days earlier"),
+    levels = ns.L("you at level %d, they at %d"), mine = ns.L("at level %d"),
+    beside = ns.L("in %s"), stood = ns.L("you were in %s"),
+    joinLevels = ns.L("%s  \194\183  %s"),
+    more = ns.L("and %d more"),
+    seenDays = ns.L("Seen on %d days since %s. "),
+    ["until"] = ns.L("Pencilled in until %s"),
+    words = ns.L("Strangers are forgotten after %s. Once in your diary, all of this is kept for good."),
+    add = ns.L("Add %s to your diary"),
 }
 local GW = PersonText.GLIMPSE
 
 -- A time with its first letter up: "Yesterday at 14:05", "On 3 Nov at
 -- 14:05" (Format.At, as a line of its own starts).
 local function AtCapital(t, now)
-    return (Format.At(t, now):gsub("^%l", string.upper))
+    return ns.UpperFirst(Format.At(t, now))
 end
 
 -- The tooltip of a stranger's name that opens their glimpse (a margin

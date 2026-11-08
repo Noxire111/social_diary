@@ -191,12 +191,12 @@ local function Build()
         if Toast.placing then Remember(host) end
     end)
     Style.Tooltip(button, function()
-        if Toast.placing then return { { "Drag to move it", 1, 1, 1 } } end
+        if Toast.placing then return { { ns.L("Drag to move it"), 1, 1, 1 } } end
         local showing = Toast.showing
         if not showing then return nil end
         return {
-            { showing.guid and "Click to open their page in the diary" or "Click to open the diary", 1, 1, 1 },
-            { "Right-click to put it away", 0.75, 0.75, 0.75 },
+            { showing.guid and ns.L("Click to open their page in the diary") or ns.L("Click to open the diary"), 1, 1, 1 },
+            { ns.L("Right-click to put it away"), 0.75, 0.75, 0.75 },
         }
     end, "ANCHOR_BOTTOM", function(_, over) Toast.Hover(over) end)
     host.button = button
@@ -204,12 +204,12 @@ local function Build()
     -- Only while it is being placed, on the story's second line: done, or
     -- back where it started.
     host.done = K.Link(FONT.strong, function() Toast.StopPlacing() end)
-    host.done:SetText("Done")
+    host.done:SetText(ns.L("Done"))
     host.reset = K.Link(FONT.body, function()
         ns.db.settings.toastAt = nil
         Anchor(host)
     end)
-    host.reset:SetText("Put it back")
+    host.reset:SetText(ns.L("Put it back"))
     for _, link in ipairs({ host.done, host.reset }) do
         link:SetFrameLevel(button:GetFrameLevel() + 1)
     end
@@ -241,7 +241,7 @@ local function Build()
 
         -- The heading: a paraph, red capitals, and a red rule fading out to
         -- the margin.
-        self.heading:SetText(text.heading:upper())
+        self.heading:SetText(ns.Upper(text.heading))
         local left, width = K.PlaceText(self.heading, M + 13, CARD.heading)
         local P = text.warning and Style.RUBRIC or Style.LAPIS
         self.paraph:SetColorTexture(P[1], P[2], P[3], 1)
@@ -259,9 +259,9 @@ local function Build()
         -- The name in capitals; the first name alone where the whole is too
         -- wide.
         local room = CARD.w - CARD.indent - M
-        self.name:SetText(text.name:upper())
+        self.name:SetText(ns.Upper(text.name))
         if K.Width(self.name) > room then
-            self.name:SetText((text.name:match("^(%S+)") or text.name):upper())
+            self.name:SetText(ns.Upper(text.name:match("^(%S+)") or text.name))
         end
         K.PlaceText(self.name, CARD.indent, CARD.name)
 

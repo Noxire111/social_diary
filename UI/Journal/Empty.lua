@@ -34,7 +34,7 @@ local MENU = { w = 160, row = 17, pad = 5, indent = 12, edge = 0.65,
 -- The strip on the right page: what it says, how far down its top lies
 -- (in the upper third, centred across the page), the turn it lies at
 -- (degrees) and the seed it is cut by, the same every time.
-local STRIP = { words = "This is where your diary entries will show up", top = 160, tilt = -1.1,
+local STRIP = { words = ns.L("This is where your diary entries will show up"), top = 160, tilt = -1.1,
     seed = "welcome" }
 
 local welcome
@@ -52,7 +52,7 @@ end
 
 local function BuildMenu(parent)
     local M, INK = MENU, Style.INK
-    local items = { "Whisper", "Invite", "Remember this\226\128\166" }
+    local items = { ns.L("Whisper"), ns.L("Invite"), ns.L("Remember this\226\128\166") }
     local menu = CreateFrame("Frame", nil, parent)
     menu:SetSize(M.w, M.pad * 2 + M.row * (#items + 1) + 3)
     local wash = menu:CreateTexture(nil, "BACKGROUND")
@@ -83,25 +83,25 @@ end
 local function BuildLeft(w)
     w.intro = Paragraph(w, FONT.body, LEFT_W)
     w.intro:SetPoint("TOPLEFT", LEFT_X, -WAYS.top)
-    w.intro:SetText("Nobody is in the diary yet. There are three ways in.")
+    w.intro:SetText(ns.L("Nobody is in the diary yet. There are three ways in."))
 
     -- 1. The right-click menu.
     w.menuHeading = Style.Rubric(w, LEFT_W)
     w.menuHeading:SetPoint("TOPLEFT", w.intro, "BOTTOMLEFT", 0, -WAYS.gap)
-    w.menuHeading:SetText("Right-click them", false)
+    w.menuHeading:SetText(ns.L("Right-click them"), false)
     w.menu = BuildMenu(w)
     w.menu:SetPoint("TOPLEFT", w.menuHeading, "BOTTOMLEFT", 6, -WAYS.under - 2)
     w.menuWhere = Paragraph(w, FONT.faded, LEFT_W)
     w.menuWhere:SetPoint("TOPLEFT", w.menu, "BOTTOMLEFT", -6, -WAYS.under)
-    w.menuWhere:SetText("In the world, in chat, or in your group.")
+    w.menuWhere:SetText(ns.L("In the world, in chat, or in your group."))
 
     -- 2. The key.
     w.keyHeading = Style.Rubric(w, LEFT_W)
     w.keyHeading:SetPoint("TOPLEFT", w.menuWhere, "BOTTOMLEFT", 0, -WAYS.gap)
-    w.keyHeading:SetText("Or press a key", true)
+    w.keyHeading:SetText(ns.L("Or press a key"), true)
     w.keyText = Paragraph(w, FONT.body, LEFT_W)
     w.keyText:SetPoint("TOPLEFT", w.keyHeading, "BOTTOMLEFT", 0, -WAYS.under)
-    w.keyText:SetText("Target them first.")
+    w.keyText:SetText(ns.L("Target them first."))
     -- The keycap, its link and the listening are UI/Kit/Keys.lua's, as
     -- Settings binds both keys the same way.
     w.keyStatus = Paragraph(w, FONT.small, LEFT_W)
@@ -113,7 +113,7 @@ local function BuildLeft(w)
     -- 3. Later, from Recently nearby.
     w.laterHeading = Style.Rubric(w, LEFT_W)
     w.laterHeading:SetPoint("TOPLEFT", w.keyStatus, "BOTTOMLEFT", 0, -WAYS.gap + 4)
-    w.laterHeading:SetText("Or add them later", false)
+    w.laterHeading:SetText(ns.L("Or add them later"), false)
     w.laterText = Paragraph(w, FONT.body, LEFT_W)
     w.laterText:SetPoint("TOPLEFT", w.laterHeading, "BOTTOMLEFT", 0, -WAYS.under)
     w.nearby = Style.Link(w, FONT.body, function() J.TurnTo("nearby") end)
@@ -147,8 +147,8 @@ local function Refresh()
     local w = welcome
     local days = J.PencilDays()
     local n = ns.People.PencilledCount()
-    local already = n == 0 and "" or (n == 1 and " One is there already." or (" %d are there already."):format(n))
-    w.laterText:SetText(("Everyone you cross paths with is saved for %s.%s"):format(days, already))
+    local already = n == 0 and "" or (n == 1 and ns.L(" One is there already.") or ns.LF(" %d are there already.", n))
+    w.laterText:SetText(ns.LF("Everyone you cross paths with is saved for %s.%s", days, already))
     w.key:Refresh()
     J.RefreshWelcomeRight()
 end

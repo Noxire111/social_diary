@@ -196,7 +196,7 @@ local LOOSE = { x = 160, y = 442, steps = 6, outer = 4, inner = 2,
 -- edges, the sheen (x in, width, alpha), their shadow, and each page's, by
 -- its key: x on the book, how far it hangs and its turn. A ribbon page
 -- placed nowhere here fails tests/pages.lua.
-local BOOK = { x = 238, y = 96, w = 250, h = 330, title = "SOCIAL\nDIARY" }
+local BOOK = { x = 238, y = 96, w = 250, h = 330, title = ns.L("SOCIAL\nDIARY") }
 local RIBBONS = {
     top = 322, width = 16, notch = 6, edge = 2, sheen = { 4, 3, 0.14 }, shadow = { 1, 1, 0.30 },
     at = { journey = { 40, 64, 4 }, people = { 62, 52, -2 }, nearby = { 84, 70, 6 }, settings = { 106, 46, 1 } },
@@ -228,15 +228,15 @@ local MAKERS = {
 }
 
 -- What the note says.
-local HELLO = { first = "Oh \226\128\148 hello. I'm your new diary.", again = "Your diary, still here whenever you're ready." }
-local BODY = "I write down the people you meet, all by myself, so that months from now you still know who they"
-    .. " were. It's only pencil, until you ink someone in."
+local HELLO = { first = ns.L("Oh \226\128\148 hello. I'm your new diary."), again = ns.L("Your diary, still here whenever you're ready.") }
+local BODY = ns.L("I write down the people you meet, all by myself, so that months from now you still know who they"
+    .. " were. It's only pencil, until you ink someone in.")
 
 local function Pencilled(n)
     -- Nobody yet: nothing to say.
     if n == 0 then return nil end
-    if n == 1 then return "I've pencilled in one already." end
-    return ("I've pencilled in %d already."):format(n)
+    if n == 1 then return ns.L("I've pencilled in one already.") end
+    return ns.LF("I've pencilled in %d already.", n)
 end
 
 --------------------------------------------------------------------------
@@ -435,7 +435,7 @@ end
 
 -- Today, as the postmark strikes it: "9 OCT".
 local function Day()
-    return ("%d %s"):format(tonumber(date("%d")) or 1, (date("%b") or ""):upper())
+    return ("%d %s"):format(tonumber(date("%d")) or 1, (ns.LDate("%b") or ""):upper())
 end
 
 -- For the pieces after this file.

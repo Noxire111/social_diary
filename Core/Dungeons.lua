@@ -152,7 +152,7 @@ function Dungeons.Credits()
                 byText[text] = c
                 out[#out + 1] = c
             end
-            c.dungeons[#c.dungeons + 1] = Dungeons.Name(id) or tostring(id)
+            c.dungeons[#c.dungeons + 1] = ns.Locale.Dungeon(Dungeons.Name(id)) or tostring(id)
         end
     end
     return out

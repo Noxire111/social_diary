@@ -247,7 +247,7 @@ local function MarginNote(plate, e, it, named)
         local quote, cut, whole = Text.MarginQuote(g.moments)
         local function Tip()
             if not (cut or strip.quoteCut) then return nil end
-            return { { "Your note" }, { whole, 1, 1, 1, true } }
+            return { { ns.L("Your note") }, { whole, 1, 1, 1, true } }
         end
         -- A stranger's name (a first sighting in hindsight) is a link in
         -- the plainer ink, to their glimpse, and its tooltip says so: who,

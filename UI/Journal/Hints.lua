@@ -47,7 +47,7 @@ Hints.Register("custom-events", {
     eligible = function() return Hints.Opens() >= 10 end,
     done = AnyCustom,
     words = function()
-        return { title = "Something missing?", body = "Right-Click the map to add events yourself." }
+        return { title = ns.L("Something missing?"), body = ns.L("Right-Click the map to add events yourself.") }
     end,
 })
 
@@ -60,8 +60,8 @@ Hints.Register("remember-bind", {
     fits = function() return RememberKey() == nil end,
     done = function() return RememberKey() ~= nil end,
     words = function()
-        return { title = "Quickly Add Notes", body = "Assign a hotkey to add a note quickly.",
-            link = "Go to Settings", onLink = function() ns.UI.ShowSettings("shortcuts") end }
+        return { title = ns.L("Quickly Add Notes"), body = ns.L("Assign a hotkey to add a note quickly."),
+            link = ns.L("Go to Settings"), onLink = function() ns.UI.ShowSettings("shortcuts") end }
     end,
 })
 
@@ -78,8 +78,8 @@ Hints.Register("remember-use", {
     done = function() return Hints.Remembers() > 0 end,
     fits = function() return RememberKey() ~= nil end,
     words = function()
-        return { title = "Quickly Add Notes",
-            body = ("Remember to use your hotkey for adding Notes! (%s)"):format(RememberKey() or "") }
+        return { title = ns.L("Quickly Add Notes"),
+            body = ns.LF("Remember to use your hotkey for adding Notes! (%s)", RememberKey() or "") }
     end,
 })
 

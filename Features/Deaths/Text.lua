@@ -16,17 +16,17 @@ local Capital, Glue, NUMBER, Times = Text.Capital, Text.Glue, Text.NUMBER, Text.
 -- together as a margin note's phrases are.
 function Deaths.Killed(n)
     n = n or 1
-    if n == 1 then return Glue("killed you") end
-    if n == 2 then return Glue("killed you twice") end
-    return Glue("killed you " .. (NUMBER[n] or tostring(n)) .. " times")
+    if n == 1 then return Glue(ns.L("killed you")) end
+    if n == 2 then return Glue(ns.L("killed you twice")) end
+    return Glue(ns.LF("killed you %s times", NUMBER[n] or tostring(n)))
 end
 
 -- A creature's rank, as a tooltip says it.
-local RANK = { elite = "Elite", rare = "Rare", rareelite = "Rare elite", worldboss = "Boss" }
+local RANK = { elite = ns.L("Elite"), rare = ns.L("Rare"), rareelite = ns.L("Rare elite"), worldboss = ns.L("Boss") }
 
 -- What the world killed you with (the death recap's environmental kinds).
-local WORLD = { FALLING = "A fall", DROWNING = "Drowned", FATIGUE = "Exhaustion", FIRE = "Fire", LAVA = "Lava",
-    SLIME = "Slime" }
+local WORLD = { FALLING = ns.L("A fall"), DROWNING = ns.L("Drowned"), FATIGUE = ns.L("Exhaustion"), FIRE = ns.L("Fire"), LAVA = ns.L("Lava"),
+    SLIME = ns.L("Slime") }
 
 -- The killer card's tooltip: the creature's name, its rank, how often it
 -- killed you on the plate and with what, and when it last did. A killer
@@ -34,10 +34,10 @@ local WORLD = { FALLING = "A fall", DROWNING = "Drowned", FATIGUE = "Exhaustion"
 function Deaths.KillerTip(k, now)
     local lines = {}
     if RANK[k.rank] then lines[#lines + 1] = RANK[k.rank] end
-    lines[#lines + 1] = Times(k.count or 1, "Killed you here", "Killed you here %s")
-        .. (k.spell and (", with " .. k.spell) or "")
-    if k.last then lines[#lines + 1] = "The last time " .. ns.UI.Format.At(k.last, now) end
-    if k.probable then lines[#lines + 1] = "As near as the diary could tell" end
+    lines[#lines + 1] = Times(k.count or 1, ns.L("Killed you here"), ns.L("Killed you here %s"))
+        .. (k.spell and ns.LF(", with %s", k.spell) or "")
+    if k.last then lines[#lines + 1] = ns.LF("The last time %s", ns.UI.Format.At(k.last, now)) end
+    if k.probable then lines[#lines + 1] = ns.L("As near as the diary could tell") end
     return k.name, lines
 end
 
@@ -53,7 +53,7 @@ function Deaths.DeathCross(count, deaths)
         if key then
             local line = at[key]
             if not line then
-                line = { n = 0, name = d.name or WORLD[d.environment:upper()] or "The world" }
+                line = { n = 0, name = d.name or WORLD[d.environment:upper()] or ns.L("The world") }
                 at[key] = line
                 lines[#lines + 1] = line
             end
@@ -63,10 +63,10 @@ function Deaths.DeathCross(count, deaths)
     end
     local out = {}
     for i, line in ipairs(lines) do
-        out[i] = line.name .. (line.spell and (", with " .. line.spell) or "")
-            .. (line.n == 2 and ", twice" or line.n > 2 and (", " .. line.n .. " times") or "")
+        out[i] = line.name .. (line.spell and ns.LF(", with %s", line.spell) or "")
+            .. (line.n == 2 and ns.L(", twice") or line.n > 2 and ns.LF(", %d times", line.n) or "")
     end
-    return Times(math.max(count or 0, #(deaths or {}), 1), "Died here", "Died here %s"), out
+    return Times(math.max(count or 0, #(deaths or {}), 1), ns.L("Died here"), ns.L("Died here %s")), out
 end
 
 -- The deaths there: "a death", "two deaths". The plate's moments of kind
@@ -88,12 +88,12 @@ end
 -- which says how that fight went and nothing of the one the player wrote.
 do
     local function Count(n)
-        if n == 1 then return "a death" end
-        return (NUMBER[n] or tostring(n)) .. " deaths"
+        if n == 1 then return ns.L("a death") end
+        return ns.LF("%s deaths", NUMBER[n] or tostring(n))
     end
     local function Died(n, c)
         local killer = c.said.death
-        return Count(n) .. (killer and (", to " .. killer) or "")
+        return Count(n) .. (killer and ns.LF(", to %s", killer) or "")
     end
     local function Inserted(c)
         return c.lists.killedBy and #c.lists.killedBy or 0

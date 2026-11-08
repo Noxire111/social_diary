@@ -98,7 +98,7 @@ local Place = ns.UI.TimelineText.Place
 local function Where(row)
     local sub = row.context and row.context.subZone
     if type(sub) ~= "string" or sub == "" or sub == row.zone then return Place(row) end
-    return " in " .. (row.zone and (sub .. ", " .. row.zone) or sub)
+    return ns.LF(" in %s", row.zone and (sub .. ", " .. row.zone) or sub)
 end
 
 -- Its line, the outcome first, as the icon is the same for both: one duel
@@ -116,20 +116,20 @@ local function Line(row, guid)
     if up + down <= 1 then
         local last = c.last
         if not COUNT[last] then last = (c.theyFled or 0) > 0 and "they_fled" or (c.fled or 0) > 0 and "fled" or balance end
-        if last == "won" then return "Won a duel against " .. (them or "them") .. where end
-        if last == "they_fled" then return "Won a duel when " .. (them or "they") .. " fled" .. where end
-        if last == "fled" then return "Fled a duel with " .. (them or "them") .. where end
-        return "Lost a duel to " .. (them or "them") .. where
+        if last == "won" then return ns.LF("Won a duel against %s", them or ns.L("them")) .. where end
+        if last == "they_fled" then return ns.LF("Won a duel when %s fled", them or ns.L("they")) .. where end
+        if last == "fled" then return ns.LF("Fled a duel with %s", them or ns.L("them")) .. where end
+        return ns.LF("Lost a duel to %s", them or ns.L("them")) .. where
     end
     local lead, rest = up, down
     if balance == "lost" then lead, rest = down, up end
-    local text = balance == "won" and ("Won " .. lead .. " duels against " .. (them or "them"))
-        or ("Lost " .. lead .. " duels to " .. (them or "them"))
-    if rest > 0 then text = text .. (balance == "won" and " and lost " or " and won ") .. rest end
+    local text = balance == "won" and ns.LF("Won %d duels against %s", lead, them or ns.L("them"))
+        or ns.LF("Lost %d duels to %s", lead, them or ns.L("them"))
+    if rest > 0 then text = ns.LF(balance == "won" and "%s and lost %d" or "%s and won %d", text, rest) end
     local Times = ns.UI.Format.Times
     local flights = {}
-    if (c.fled or 0) > 0 then flights[#flights + 1] = ns.UI.Format.You(row.me, "{you} fled ") .. Times(c.fled) end
-    if (c.theyFled or 0) > 0 then flights[#flights + 1] = "they fled " .. Times(c.theyFled) end
+    if (c.fled or 0) > 0 then flights[#flights + 1] = ns.UI.Format.YouF(row.me, "{you} fled %s", Times(c.fled)) end
+    if (c.theyFled or 0) > 0 then flights[#flights + 1] = ns.LF("they fled %s", Times(c.theyFled)) end
     if #flights > 0 then where = where .. "  \194\183  " .. table.concat(flights, ", ") end
     return text .. where
 end
@@ -137,7 +137,7 @@ end
 local function Always() return true end
 
 -- The picker's reason, the same whoever challenged (it isn't kept).
-ns.Rows.Register(KIND, { proximity = true, plate = 6, moment = Always, reason = "you duelled them",
+ns.Rows.Register(KIND, { proximity = true, plate = 6, moment = Always, reason = ns.L("you duelled them"),
     text = Line, icon = KIND })
 
 -- Its icon: Challenging Shout's, a raised war cry (15 Oct, not yet seen in
@@ -219,20 +219,20 @@ end
 -- says only that there was a duel, rather than claiming a win.
 ns.JourneyRecap.RegisterMoment("duel", { order = 80, list = LIST, field = "duel", rank = 6.5, light = true,
     custom = {
-        label = "Duel",
-        heading = "A duel",
+        label = ns.L("Duel"),
+        heading = ns.L("A duel"),
         -- A detected duel keeps its opponent by GUID alone: their name, for the form.
         values = function(values, rec) values.name = values.name or Duels.Who(rec) end,
         group = "social",
         -- Text.lua's, read when asked: this file loads before it.
         describe = function(rec) return Duels.Describe(rec) end,
         fields = {
-            { key = "name", type = "person", guid = "guid", most = 40, label = "Opponent",
-                hint = "who it was, or leave this empty" },
-            { key = "won", type = "number", min = 0, max = 99, label = "Duels won" },
-            { key = "lost", type = "number", min = 0, max = 99, label = "Duels lost" },
-            { key = "theyFled", type = "number", min = 0, max = 99, label = "They fled" },
-            { key = "fled", type = "number", min = 0, max = 99, label = "You fled" },
+            { key = "name", type = "person", guid = "guid", most = 40, label = ns.L("Opponent"),
+                hint = ns.L("who it was, or leave this empty") },
+            { key = "won", type = "number", min = 0, max = 99, label = ns.L("Duels won") },
+            { key = "lost", type = "number", min = 0, max = 99, label = ns.L("Duels lost") },
+            { key = "theyFled", type = "number", min = 0, max = 99, label = ns.L("They fled") },
+            { key = "fled", type = "number", min = 0, max = 99, label = ns.L("You fled") },
         },
     } })
 

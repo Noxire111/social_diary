@@ -150,7 +150,7 @@ local function Insert(entry, here, quiet)
     if here then ns.Characters.Seen(guid) end
 
     if not quiet then
-        ns.Print("added |cffffffff%s|r to the diary.", ns.Characters.FullName(guid) or guid)
+        ns.Print(ns.L("added |cffffffff%s|r to the diary."), ns.Characters.FullName(guid) or guid)
     end
     ns.Debug("%d buffered interaction(s) came with them",
         ns.Interactions.Count(guid))
@@ -384,10 +384,10 @@ function Diary.Remove(guid, mode)
 
     if mode == "purge" then
         ns.Characters.Forget(guid)
-        ns.Print("deleted everything about |cffffffff%s|r.", name)
+        ns.Print(ns.L("deleted everything about |cffffffff%s|r."), name)
     else
-        ns.Print("removed |cffffffff%s|r from the diary; their history is now"
-            .. " kept under the buffer's retention rules.", name)
+        ns.Print(ns.L("removed |cffffffff%s|r from the diary; their history is now"
+            .. " kept under the buffer's retention rules."), name)
     end
 
     return true

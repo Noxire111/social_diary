@@ -121,7 +121,7 @@ local function DrawFull(e)
         if zone.mapID == mapID then z = zone end
     end
     local foot = page.foot
-    foot.name:SetText((z and Text.ZoneName(z) or ns.MapName(mapID) or ("Map " .. mapID)):upper())
+    foot.name:SetText(ns.Upper(z and Text.ZoneName(z) or ns.MapName(mapID) or ns.LF("Map %s", mapID)))
     local names, fights = Company(sheet)
     foot.meta:SetText(z and Text.ZoneFoot(z, names, fights) or "Nothing of your road is on this map yet.")
     -- On one line where it fits, else the line under the name; the hint

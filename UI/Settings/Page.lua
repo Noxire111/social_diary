@@ -200,7 +200,7 @@ end
 -- Sections in full (the name, and what it covers in small print under it);
 -- subpages smaller, the name alone, indented under their section.
 local function BuildNav(parent)
-    page.version = ns.UI.Journal.PageHeading(parent, "Settings")
+    page.version = ns.UI.Journal.PageHeading(parent, ns.L("Settings"))
     page.nav, page.brackets = {}, {}
 
     local x, y = BOOK.LEFT_X - 6, NAV_TOP
@@ -255,7 +255,7 @@ local function BuildNav(parent)
         Style.PlaySound("pageTurn")
         ns.UI.ShowIntro()
     end)
-    page.intro:SetText("Show the introduction again")
+    page.intro:SetText(ns.L("Show the introduction again"))
     page.intro:SetPoint("BOTTOMRIGHT", parent, "TOPLEFT", BOOK.LEFT_X + BOOK.LEFT_W, -BOOK.BOOK_H + 22)
 end
 
@@ -285,7 +285,7 @@ end
 
 -- The grey ribbon's page, the book's last (UI/Journal/Pages.lua).
 ns.UI.Journal.RegisterPage("settings", {
-    order = 40, ribbon = { colour = "gray", label = "Settings" }, leaf = -1, buildOrder = 60,
+    order = 40, ribbon = { colour = "gray", label = ns.L("Settings") }, leaf = -1, buildOrder = 60,
     build = function(container) BuildPage(container) end,
     refresh = function() SettingsUI.Refresh() end,
 })

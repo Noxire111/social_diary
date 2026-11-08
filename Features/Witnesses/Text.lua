@@ -19,7 +19,7 @@ local Capital, Glue, Health, NUMBER, Short, When, Who =
 -- player wrote in (Kind.lua's Written) goes by the name as written, which is all
 -- a typed name has, and all that is left of a picked one once they are forgotten.
 function Witnesses.Name(w)
-    return w and w.name or Short(w and w.guid) or "Someone"
+    return w and w.name or Short(w and w.guid) or ns.L("Someone")
 end
 
 -- How many more were there, after the name on the card's one line:
@@ -29,8 +29,8 @@ function Witnesses.Others(n, prose)
     n = n or 0
     if n < 1 then return nil end
     local und = prose and "and" or "&"
-    if n == 1 then return und .. " another" end
-    return und .. " " .. (NUMBER[n] or tostring(n)) .. " others"
+    if n == 1 then return ns.LF("%s another", und) end
+    return ns.LF("%s %s others", und, NUMBER[n] or tostring(n))
 end
 
 -- What the watching was, by how long (Kind.lua's WATCHING): "saw" under
@@ -51,11 +51,11 @@ end
 -- The second value is the word the hand underlines (twice), if any.
 function Witnesses.Deed(w)
     local look = Witnesses.Look(w)
-    if look == "merciless" then return "mercilessly watched you die", "mercilessly" end
-    if look == "saw" then return "saw you die" end
-    if look then return "watched you die" end
-    if w and w.type == Witnesses.SAVED then return "saved you" end
-    return "tried to save you"
+    if look == "merciless" then return ns.L("mercilessly watched you die"), ns.L("mercilessly") end
+    if look == "saw" then return ns.L("saw you die") end
+    if look then return ns.L("watched you die") end
+    if w and w.type == Witnesses.SAVED then return ns.L("saved you") end
+    return ns.L("tried to save you")
 end
 
 -- The creature, in small print under the deed: "to a Ragged Young Wolf"
@@ -64,7 +64,7 @@ end
 function Witnesses.Foe(w)
     local name = w and w.creature and Text.KillerName(w.creature)
     if not name then return nil end
-    return (w.type == Witnesses.WATCHED and "to " or "from ") .. name
+    return ns.LF(w.type == Witnesses.WATCHED and "to %s" or "from %s", name)
 end
 
 -- The witness in a sentence of its own after the caption's, where the card
@@ -87,7 +87,7 @@ function Witnesses.Tip(w, now)
     if w.written then
         local foe = Witnesses.Foe(w)
         local lines = { Capital(Witnesses.Deed(w)) .. (foe and (" " .. foe) or "") }
-        if ns.Witnesses.Card.Evidence(w) then lines[#lines + 1] = "You came out of it with " .. Health(w) end
+        if ns.Witnesses.Card.Evidence(w) then lines[#lines + 1] = ns.LF("You came out of it with %s", Health(w)) end
         lines[#lines + 1] = When(w.t, w.level, now)
         return Who(w.guid) or Witnesses.Name(w), lines
     end
@@ -95,7 +95,7 @@ function Witnesses.Tip(w, now)
     local lines = {}
     if record then
         local who = {}
-        if record.level then who[#who + 1] = "Level " .. record.level end
+        if record.level then who[#who + 1] = ns.LF("Level %s", record.level) end
         who[#who + 1] = ns.UI.Format.RaceName(record)
         who[#who + 1] = ns.UI.Format.ClassName(record)
         if #who > 0 then lines[#lines + 1] = table.concat(who, " ") end
@@ -103,19 +103,19 @@ function Witnesses.Tip(w, now)
     local look = Witnesses.Look(w)
     if look then
         if type(w.watched) == "number" then
-            lines[#lines + 1] = "Watched for " .. Glue(("%.1f seconds"):format(w.watched))
+            lines[#lines + 1] = ns.LF("Watched for %s", Glue(ns.LF("%.1f seconds", w.watched)))
         end
-        lines[#lines + 1] = "Not in a fight themselves"
+        lines[#lines + 1] = ns.L("Not in a fight themselves")
     elseif w.type == Witnesses.SAVED then
-        lines[#lines + 1] = "Joined your fight"
-        lines[#lines + 1] = "You came out of it with " .. Health(w)
+        lines[#lines + 1] = ns.L("Joined your fight")
+        lines[#lines + 1] = ns.LF("You came out of it with %s", Health(w))
     else
-        lines[#lines + 1] = "Joined the fight you died in"
+        lines[#lines + 1] = ns.L("Joined the fight you died in")
     end
     local more = w.others or 0
     if more > 0 then
-        lines[#lines + 1] = more == 1 and "One other was there too"
-            or (Capital(NUMBER[more] or tostring(more)) .. " others were there too")
+        lines[#lines + 1] = more == 1 and ns.L("One other was there too")
+            or ns.LF("%s others were there too", Capital(NUMBER[more] or tostring(more)))
     end
     local at = w.death or w.call
     lines[#lines + 1] = When(w.t, at and at.level, now)

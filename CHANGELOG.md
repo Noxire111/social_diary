@@ -5,6 +5,18 @@ All notable changes to Social Diary. Versions follow the `## Version` line in
 
 ## [Unreleased]
 
+This Update adds Spanish.
+
+### Shiny new Things
+
+- Social Diary speaks Spanish on `esES` and `esMX` clients: settings, `/sd`, the introduction, hints, the pages of _Your Diary_, the timeline, the toasts, the dungeon pages and the key bindings. Other clients see no change
+- Dates, lists, plurals and "you" read as Spanish, not as translated English
+- Dungeon and wing names show in Spanish; bosses the client has not named yet keep the data's English names
+
+### Fixes
+
+- Capital cities count as cities on the timeline whatever the client's language
+
 ## [2.4.0]
 
 ### Fixes

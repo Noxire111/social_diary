@@ -7,6 +7,9 @@
 
 local addonName, ns = ...
 
+-- One UTF-8 character: an initial that is an accented letter is whole.
+local CHAR = "^[%z\1-\127\194-\244][\128-\191]*"
+
 local Style = ns.Style
 -- The cover's brass (UI/Style/Book.lua), for the medallions' rings.
 local BRASS_LIGHT, BRASS_MID, BRASS_DARK = Style.BRASS_LIGHT, Style.BRASS_MID, Style.BRASS_DARK
@@ -101,7 +104,7 @@ end
 function Style.SetPersonHeading(owner, record, name, who)
     owner.portrait:SetCharacter(record)
     owner.name:SetFontObject(Style.FONT.title)
-    owner.name:SetText(name:upper())
+    owner.name:SetText(ns.Upper(name))
     if owner.name:GetUnboundedStringWidth() > owner.nameRoom then
         owner.name:SetFontObject(Style.FONT.titleSmall)
     end
@@ -184,7 +187,7 @@ function Style.Medallion(parent, size)
         else
             icon:SetColorTexture(Style.PAPER[1] * 0.92, Style.PAPER[2] * 0.92, Style.PAPER[3] * 0.92, 1)
             local name = (visit.name or "?"):gsub("^The ", "")
-            self.initial:SetText(name:sub(1, 1):upper())
+            self.initial:SetText(ns.Upper(name:match(CHAR) or ""))
             self.how = "initial"
         end
         self.initial:SetShown(self.how == "initial")
@@ -324,7 +327,7 @@ function Style.Rubric(parent, width)
     Style.Shade(rule, "HORIZONTAL", R[1], R[2], R[3], RUBRIC.ruleAlpha, 0)
 
     function heading:SetText(text, lapis)
-        self.text:SetText(text:upper())
+        self.text:SetText(ns.Upper(text))
         local colour = lapis and Style.LAPIS or Style.RUBRIC
         self.paraph:SetColorTexture(colour[1], colour[2], colour[3], 1)
     end

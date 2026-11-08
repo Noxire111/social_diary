@@ -31,18 +31,18 @@ local DAY = ns.DAY
 local Rows = ns.Rows
 
 People.SORTS = {
-    { key = "lastMet", label = "Last met" },
-    { key = "timesMet", label = "Times met" },
-    { key = "together", label = "Time together" },
-    { key = "lastSeen", label = "Last seen" },
-    { key = "name", label = "Name" },
+    { key = "lastMet", label = ns.L("Last met") },
+    { key = "timesMet", label = ns.L("Times met") },
+    { key = "together", label = ns.L("Time together") },
+    { key = "lastSeen", label = ns.L("Last seen") },
+    { key = "name", label = ns.L("Name") },
 }
 
 People.WITHIN = {
-    { days = 7, label = "Last 7 days" },
-    { days = 30, label = "Last 30 days" },
-    { days = 90, label = "Last 90 days" },
-    { days = 365, label = "Last year" },
+    { days = 7, label = ns.L("Last 7 days") },
+    { days = 30, label = ns.L("Last 30 days") },
+    { days = 90, label = ns.L("Last 90 days") },
+    { days = 365, label = ns.L("Last year") },
 }
 
 --------------------------------------------------------------------------

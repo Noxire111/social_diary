@@ -24,6 +24,14 @@ Install the Addon like you do with any oter WoW Addon: Put it in your game's `In
 
 Download a release rather than the repository itself.
 
+## Language
+
+The interface follows the game client: Spanish (`esES`, `esMX`) is translated,
+every other client reads English. There is no setting for it. Whatever is not
+translated yet shows in English. Names and places the diary has already kept
+stay in the language they were captured in. Spanish text lives in
+`Locale/esES/`; `Locale/PROGRESS.md` says how far it goes.
+
 ## Getting started
 
 Opening it the first time, an Onboarding Message will appear. After that, you can type `/sd` to open the journal.

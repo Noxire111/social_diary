@@ -22,8 +22,8 @@ local Day, Place, Short = Text.Day, Text.Place, Text.Short
 function Text.Prologue(prologue)
     if not prologue then return nil end
     local zone = MapName(prologue.mapID)
-    return ("This diary began at level %d%s, on %s."):format(prologue.level,
-        zone and (", in " .. zone) or "", Day(prologue.at))
+    if zone then return ns.LF("This diary began at level %d, in %s, on %s.", prologue.level, zone, Day(prologue.at)) end
+    return ns.LF("This diary began at level %d, on %s.", prologue.level, Day(prologue.at))
 end
 
 --------------------------------------------------------------------------
@@ -33,9 +33,9 @@ end
 -- "LEVEL 12", "WEEK OF 6 OCTOBER": the rubric over the entry.
 function Text.Title(e, now)
     if e.kind == "week" then
-        return ("WEEK OF %s"):format(Day(e.week, now):upper())
+        return ns.LF("WEEK OF %s", ns.Upper(Day(e.week, now)))
     end
-    return ("LEVEL %d"):format(e.level)
+    return ns.LF("LEVEL %d", e.level)
 end
 
 -- How the entry opens: where and when it began.
@@ -44,20 +44,24 @@ local function Opening(e, now)
         local r = e.reached
         if r then
             local where = r.dungeon or Place(r.mapID, r.subZone)
-            return ("Reached level %d%s, on %s. The road goes on."):format(
-                e.level or 0, where and (" in " .. where) or "", Day(r.at, now))
+            if where then
+                return ns.LF("Reached level %d in %s, on %s. The road goes on.", e.level or 0, where, Day(r.at, now))
+            end
+            return ns.LF("Reached level %d, on %s. The road goes on.", e.level or 0, Day(r.at, now))
         end
         return nil
     end
     if not e.known then return nil end
     if e.first then
         local place = e.places[1] and (e.places[1].name or MapName(e.places[1].mapID))
-        return ("Your road begins here, on %s%s."):format(Day(e.from, now), place and (", in " .. place) or "")
+        if place then return ns.LF("Your road begins here, on %s, in %s.", Day(e.from, now), place) end
+        return ns.LF("Your road begins here, on %s.", Day(e.from, now))
     end
     local r = e.reached
     if not r then return nil end
     local where = r.dungeon or Place(r.mapID, r.subZone)
-    return ("Reached on %s%s."):format(Day(r.at, now), where and (" in " .. where) or "")
+    if where then return ns.LF("Reached on %s in %s.", Day(r.at, now), where) end
+    return ns.LF("Reached on %s.", Day(r.at, now))
 end
 
 -- The zones and their times are not told here: the ledger under the entry
@@ -72,13 +76,13 @@ end
 -- only where it differs from the first's, after one of the `openers`.
 local STOPS = {
     first = {
-        fighting = { "%D of fighting at %W.", "%W kept you fighting for %d." },
-        questing = { "%D of quests round %W.", "Quests kept you at %W for %d." },
-        resting = { "%D resting at %W.", "You rested %d at %W." },
-        none = { "%D at %W.", "You lingered at %W for %d." },
+        fighting = { ns.L("%D of fighting at %W."), ns.L("%W kept you fighting for %d.") },
+        questing = { ns.L("%D of quests round %W."), ns.L("Quests kept you at %W for %d.") },
+        resting = { ns.L("%D resting at %W."), ns.L("You rested %d at %W.") },
+        none = { ns.L("%D at %W."), ns.L("You lingered at %W for %d.") },
     },
-    later = { fighting = "fighting near %W", questing = "quests at %W", resting = "a rest at %W" },
-    openers = { "Later, ", "Then ", "After that, " },
+    later = { fighting = ns.L("fighting near %W"), questing = ns.L("quests at %W"), resting = ns.L("a rest at %W") },
+    openers = { ns.L("Later, "), ns.L("Then "), ns.L("After that, ") },
 }
 
 -- Which way an entry says it: the same every time for the same entry, and
@@ -126,7 +130,7 @@ local function Flights(e)
         end
     end
     local list = List(names, { max = 3, shown = 2 })
-    return list and ("Flew to " .. list .. ".") or nil
+    return list and ns.LF("Flew to %s.", list) or nil
 end
 
 -- "With Tester Testerson for four hours and Kaelith Dawnsong briefly."
@@ -140,11 +144,11 @@ local function People(e)
     for _, person in ipairs(e.people) do
         local name = Who(person.guid)
         if name then
-            parts[#parts + 1] = name .. (person.seconds >= 300 and (" for " .. Spoken(person.seconds)) or " briefly")
+            parts[#parts + 1] = person.seconds >= 300 and ns.LF("%s for %s", name, Spoken(person.seconds)) or ns.LF("%s briefly", name)
         end
     end
     local list = List(parts, PEOPLE)
-    return list and ("With " .. list .. ".") or nil
+    return list and ns.LF("With %s.", list) or nil
 end
 
 -- A fight in a few words. A stranger the buffer has let go is "a fight",
@@ -153,9 +157,9 @@ function Text.Fight(mark, index)
     local guid = ns.Journey.FightWho(mark, index)
     local name = guid and Who(guid)
     if mark.outcome == "won" then
-        return name and ("beat " .. name) or "won a fight"
+        return name and ns.LF("beat %s", name) or ns.L("won a fight")
     end
-    return name and ("lost to " .. name) or "lost a fight"
+    return name and ns.LF("lost to %s", name) or ns.L("lost a fight")
 end
 
 local function Fights(e, index)
@@ -175,7 +179,7 @@ end
 -- A quiet stretch still says something, briefly.
 local function Quiet(e)
     if e.kind == "week" then return nil end
-    if e.seconds <= 0 then return "Nothing on the road at this level." end
+    if e.seconds <= 0 then return ns.L("Nothing on the road at this level.") end
     return nil
 end
 
@@ -262,17 +266,17 @@ end
 
 -- "so far" under the level being played now.
 function Text.Current(e)
-    return e.current and "so far" or nil
+    return e.current and ns.L("so far") or nil
 end
 
 -- JRN-23: the line under a level's prose for a first sighting in
 -- hindsight. "You first saw Koko in Mulgore. You'd meet again at level 4."
 function Text.Hindsight(f)
-    local name = Short(f.guid) or "someone"
+    local name = Short(f.guid) or ns.L("someone")
     local zone = MapName(f.mapID)
-    local line = "You first saw " .. name .. (zone and (" in " .. zone) or "") .. "."
+    local line = zone and ns.LF("You first saw %s in %s.", name, zone) or ns.LF("You first saw %s.", name)
     if f.metLevel and f.level and f.metLevel > f.level then
-        return line .. " You'd meet again at level " .. f.metLevel .. "."
+        return line .. " " .. ns.LF("You'd meet again at level %d.", f.metLevel)
     end
-    return line .. " You'd meet again before the level was out."
+    return line .. " " .. ns.L("You'd meet again before the level was out.")
 end

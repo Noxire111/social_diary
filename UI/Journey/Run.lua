@@ -569,7 +569,7 @@ end
 local function AddMember(visit, guid)
     local entry, added = ns.DungeonRun.Keep(visit, guid)
     if not entry then
-        ns.Print("could not identify that character.")
+        ns.Print(ns.L("could not identify that character."))
         return
     end
     if added then Style.PlaySound("write") end
@@ -737,7 +737,7 @@ function YourDiary.DrawRun(e, visit)
     local seed = Surface.Seed("run:" .. tostring(visit.id))
 
     -- The title: hand-lettered, as large as it goes on one line; else two.
-    local name = visit.name or "A dungeon"
+    local name = visit.name or ns.L("A dungeon")
     local size, two = ns.RunPage.TitleSize(function(s) return Measure(run, name, Style.GOODMOUNTAIN, s) end)
     local T = RUN.title
     local titleLines = two and Wrap(run, name, Style.GOODMOUNTAIN, size, T.most, 2) or { name }
@@ -909,7 +909,7 @@ function YourDiary.DrawRun(e, visit)
                 local who = x.f.me and Text.RUN.you or (x.f.first or NameOf(visit, x.f.guid))
                 local killer = x.d.killer and x.d.killer.name
                 local line = Text.RunDiedTo(who, killer)
-                GameTooltip:AddLine(line:sub(1, 1):upper() .. line:sub(2), 1, 1, 1)
+                GameTooltip:AddLine(ns.UpperFirst(line), 1, 1, 1)
             end
             GameTooltip:Show()
         end)

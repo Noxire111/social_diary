@@ -25,15 +25,15 @@ Hunter.WORDS = {
     kind = "%s · %s",
     -- The pet's level on the printed tag, as the close call's tag says a
     -- creature's ("Lv 7"). %d the level.
-    level = "Lv %d",
+    level = ns.L("Lv %d"),
     -- The mark's tooltip, its first line under a given name: the name and
     -- the deed ("Bristlemane, tamed here"). %s the name.
-    tipNamed = "%s, tamed here",
+    tipNamed = ns.L("%s, tamed here"),
     -- Its first line with no given name: the beast's own name, bare as a
     -- tooltip's title ("Prairie Stalker, tamed here"). %s the beast.
-    tipBeast = "%s, tamed here",
+    tipBeast = ns.L("%s, tamed here"),
     -- Its first line knowing neither ("A pet, tamed here").
-    tipNone = "A pet, tamed here",
+    tipNone = ns.L("A pet, tamed here"),
     -- Its second line, under a given name: what the game calls it, the
     -- ledger's join ("Wolf  ·  Prairie Stalker"). %1$s family, %2$s beast.
     tipKind = "%s  ·  %s",
@@ -41,7 +41,7 @@ Hunter.WORDS = {
     -- The custom card's picker title, heading and form labels are on the
     -- moment's spec in Kind.lua, as every feature's are (it loads first).
     -- A menu's line for one card with neither name nor beast ("A pet").
-    describeNone = "A pet",
+    describeNone = ns.L("A pet"),
 }
 
 local W = Hunter.WORDS

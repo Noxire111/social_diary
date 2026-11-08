@@ -173,7 +173,7 @@ function Parcel.BuildWrapped(host, S)
     S.Rect(F, "OVERLAY", -2, lx + o, ly + o, 1, A.h - 2 * o, ink)
     S.Rect(F, "OVERLAY", -2, lx + A.w - o - 1, ly + o, 1, A.h - 2 * o, ink)
     local label = { title = Style.Text(F, FONT.page) }
-    label.title:SetText("SOCIAL DIARY")
+    label.title:SetText(ns.L("SOCIAL DIARY"))
     S.Line(label.title, lx + A.w / 2, ly + A.title, "CENTER")
     host.label = label
 
@@ -218,9 +218,9 @@ function Parcel.BuildWrapped(host, S)
 
     -- The links under it, on the game world.
     local y = py + ph + P.links
-    host.tear = LightLink(F, "Tear it open", LINK.hot, function() host:Tear() end)
+    host.tear = LightLink(F, ns.L("Tear it open"), LINK.hot, function() host:Tear() end)
     host.tear:SetPoint("LEFT", host, "TOPLEFT", px + 4 - SCENE.left, -(y - SCENE.top))
-    host.later = LightLink(F, "Later", LINK.base, function()
+    host.later = LightLink(F, ns.L("Later"), LINK.base, function()
         Parcel.later = true
         ns.UI.Parcel.HideSlip(false)
     end)

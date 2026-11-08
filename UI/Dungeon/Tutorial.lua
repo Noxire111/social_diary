@@ -34,13 +34,13 @@ local CREASE = {
     curl = { lift = 5, pull = 3 },
 }
 local WORDS = {
-    title = "About this map",
+    title = ns.L("About this map"),
     paragraphs = {
-        "There is no navigation data inside dungeons, so the diary has to work out where things happened.",
-        "It uses a default route, the usual way through, to pinpoint the spots.",
-        "If you went another way on a run, use Adjust Path at the top of the map to draw your own.",
+        ns.L("There is no navigation data inside dungeons, so the diary has to work out where things happened."),
+        ns.L("It uses a default route, the usual way through, to pinpoint the spots."),
+        ns.L("If you went another way on a run, use Adjust Path at the top of the map to draw your own."),
     },
-    ok = "Got it",
+    ok = ns.L("Got it"),
 }
 DungeonPage.TUTORIAL = { NOTE = NOTE, WORDS = WORDS }
 

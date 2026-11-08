@@ -142,8 +142,8 @@ end
 ns.JourneyRecap.RegisterMoment("tame", { order = 90, list = "tames", field = "tame", rank = 1,
     custom = {
         creature = "beast",
-        label = "Tamed Pet",
-        heading = "A pet tamed",
+        label = ns.L("Tamed Pet"),
+        heading = ns.L("A pet tamed"),
         group = "other",
         offer = function()
             local _, class = UnitClass("player")
@@ -152,9 +152,9 @@ ns.JourneyRecap.RegisterMoment("tame", { order = 90, list = "tames", field = "ta
         -- A line of a menu, where a spot merges several or one is hidden.
         describe = function(tame) return Hunter.Describe(tame) end,
         fields = {
-            { key = "name", type = "text", label = "Name", hint = "the name you gave it, or leave this empty" },
-            { key = "beast", type = "text", label = "Beast" },
-            { key = "family", type = "text", label = "Family", hint = "Wolf, Cat, Boar…" },
-            { key = "petLevel", type = "number", min = 1, max = 60, label = "Level" },
+            { key = "name", type = "text", label = ns.L("Name"), hint = ns.L("the name you gave it, or leave this empty") },
+            { key = "beast", type = "text", label = ns.L("Beast") },
+            { key = "family", type = "text", label = ns.L("Family"), hint = "Wolf, Cat, Boar…" },
+            { key = "petLevel", type = "number", min = 1, max = 60, label = ns.L("Level") },
         },
     } })

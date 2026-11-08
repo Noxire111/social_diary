@@ -13,11 +13,12 @@ local Capital, MapName, Who, Day, Glue = Text.Capital, Text.MapName, Text.Who, T
 
 -- What each first is called: on a plate ("a first bag") and in a sentence
 -- ("your first bag").
-local FIND = { bag = "bag", shoulder = "shoulders", uncommon = "green", rare = "blue", epic = "epic" }
+local FIND = { bag = "bag", shoulder = "shoulders", uncommon = "green", rare = "blue", epic = "epic" }   -- also keys of the Spanish text
 
 local function Words(kind)
     local word = FIND[kind] or "find"
-    return (kind == "shoulder" and "first " or "a first ") .. word, "your first " .. word
+    -- Whole phrases, since Spanish agrees them with the noun ("una primera bolsa").
+    return ns.L((kind == "shoulder" and "first " or "a first ") .. word), ns.L("your first " .. word)
 end
 Firsts.Words = Words
 
@@ -44,6 +45,11 @@ local HEADING_ORDER = { bag = 1, shoulder = 2, uncommon = 3, rare = 4, epic = 5 
 function Firsts.Heading(what, short)
     local list = type(what) == "table" and { unpack(what) } or { what }
     table.sort(list, function(a, b) return (HEADING_ORDER[a] or 9) < (HEADING_ORDER[b] or 9) end)
+    if ns.Locale.Active() then
+        local names = {}
+        for i, kind in ipairs(list) do names[i] = ns.L(HEADING[kind] or "find", "Firsts") end
+        return ns.LF("Your first %s!", ns.UI.Format.List(names))
+    end
     local words = {}
     for i, kind in ipairs(list) do
         local word = HEADING[kind] or "find"
@@ -71,9 +77,9 @@ function Firsts.GiftLine(rec, named)
     if giver and named and named[giver] then return nil end
     if giver and ns.Diary.IsDiary(giver) then
         local name = Text.Short(giver)
-        if name then return "from " .. name end
+        if name then return ns.LF("from %s", name) end
     end
-    return "a gift"
+    return ns.L("a gift")
 end
 
 -- Who gave a first, while the diary still knows them.
@@ -87,21 +93,20 @@ end
 function Firsts.Sentence(kind, rec)
     local _, yours = Words(kind)
     local zone = MapName(rec.mapID)
-    local in_ = zone and (" in " .. zone) or ""
-    local text
+        local text
     if rec.from == "trade" then
         local giver = Giver(rec)
-        text = giver and (Who(giver) .. " gave you " .. yours) or (Capital(yours) .. " was a gift")
+        text = giver and ns.LF("%s gave you %s", Who(giver), yours) or ns.LF("%s was a gift", Capital(yours))
     elseif rec.from == "quest" then
-        text = "A quest gave you " .. yours
+        text = ns.LF("A quest gave you %s", yours)
     elseif rec.from == "vendor" then
-        text = "Bought " .. yours .. in_
+        text = zone and ns.LF("Bought %s in %s", yours, zone) or ns.LF("Bought %s", yours)
     elseif rec.from == "craft" then
-        text = "Made " .. yours .. in_
+        text = zone and ns.LF("Made %s in %s", yours, zone) or ns.LF("Made %s", yours)
     elseif rec.from == "mail" then
-        text = Capital(yours) .. " came by mail"
+        text = ns.LF("%s came by mail", Capital(yours))
     else
-        text = "Found " .. yours .. in_
+        text = zone and ns.LF("Found %s in %s", yours, zone) or ns.LF("Found %s", yours)
     end
     local name = Name(rec)
     return text .. (name and (": " .. name) or "") .. "."
@@ -123,14 +128,14 @@ end
 function Firsts.Tip(m, now, bare)
     local rec = m.find or m
     local _, yours = Words(m.what or m.kind)
-    local how = ({ quest = "a quest's reward", vendor = "bought", craft = "made by hand", mail = "by mail",
-        loot = "looted" })[rec.from]
+    local how = ({ quest = ns.L("a quest's reward"), vendor = ns.L("bought"), craft = ns.L("made by hand"), mail = ns.L("by mail"),
+        loot = ns.L("looted") })[rec.from]
     if rec.from == "trade" then
         local giver = Giver(rec)
-        how = giver and ("from " .. Who(giver)) or "a gift"
+        how = giver and ns.LF("from %s", Who(giver)) or ns.L("a gift")
     end
-    local parts = { not bare and Name(rec) or nil, how or "found",
-        (rec.level and ("at level " .. rec.level) or nil), Day(rec.t, now) }
+    local parts = { not bare and Name(rec) or nil, how or ns.L("found"),
+        (rec.level and ns.LF("at level %s", rec.level) or nil), Day(rec.t, now) }
     local list = {}
     for i = 1, 4 do
         if parts[i] then list[#list + 1] = parts[i] end
@@ -147,7 +152,7 @@ Firsts.PERSON = {
     tier = 1,
     say = function(m)
         local _, yours = Words(m.what)
-        return "gave you " .. Glue(yours)
+        return ns.LF("gave you %s", Glue(yours))
     end,
 }
 
@@ -185,7 +190,7 @@ do
         local giver = m.gift and Giver(m.find or m)
         if m.gift and Shown(m, c) then return text, true end
         if giver and c.named[giver] then return text, true end
-        if giver and ns.Diary.IsDiary(giver) then return text .. " from " .. Short(giver), true end
+        if giver and ns.Diary.IsDiary(giver) then return ns.L("%s from %s", "Features"):format(text, Short(giver)), true end
         return text, false
     end
     Text.RegisterCaption("find", {
@@ -197,7 +202,7 @@ do
             local words = {}
             for _, f in ipairs(finds) do words[#words + 1] = (Found(f, c)) end
             local text = Capital(List(words)) .. (name and (": " .. name) or "")
-            if #finds == 1 and m.gift and not select(2, Found(m, c)) then text = text .. ", a gift" end
+            if #finds == 1 and m.gift and not select(2, Found(m, c)) then text = text .. ns.L(", a gift") end
             return text
         end },
         tail = { at = 10, say = function(finds, c)

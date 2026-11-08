@@ -15,14 +15,14 @@ local INDENT = Kit.INDENT
 local function BuildSounds(pane, c)
     local page = SettingsUI.page
 
-    c:Heading("World PvP")
-    page.foeAlert = Switch(c, "Sound a raid warning when a foe comes into view", "foeAlert", nil, nil,
-        "Tag someone foe in your diary, e.g. for World PVP.")
+    c:Heading(ns.L("World PvP"))
+    page.foeAlert = Switch(c, ns.L("Sound a raid warning when a foe comes into view"), "foeAlert", nil, nil,
+        ns.L("Tag someone foe in your diary, e.g. for World PVP."))
 
     page.foeSample = Style.Link(pane, FONT.body, function() ns.UI.Toast.PlayFoeAlert() end)
-    page.foeSample:SetText("Hear it")
+    page.foeSample:SetText(ns.L("Hear it"))
     c:Place(page.foeSample, 18, INDENT)
 end
 
-SettingsUI.RegisterSection("sounds", { order = 30, label = "Sounds",
-    about = "A warning when a foe comes into view", build = BuildSounds })
+SettingsUI.RegisterSection("sounds", { order = 30, label = ns.L("Sounds"),
+    about = ns.L("A warning when a foe comes into view"), build = BuildSounds })

@@ -77,23 +77,23 @@ function Duels.Note(rec, named)
     local who = named ~= false and Duels.Who(rec) or nil
     if up + down <= 1 then
         local last = Single(rec)
-        if not last then return who and ("duelled " .. who) or "a duel" end
-        if last == "won" then return who and ("beat " .. who .. " in a duel") or "won a duel" end
-        if last == "they_fled" then return (who or "they") .. " fled the duel" end
-        if last == "fled" then return who and ("fled a duel with " .. who) or "fled a duel" end
-        return who and ("lost a duel to " .. who) or "lost a duel"
+        if not last then return who and ns.LF("duelled %s", who) or ns.L("a duel") end
+        if last == "won" then return who and ns.LF("beat %s in a duel", who) or ns.L("won a duel") end
+        if last == "they_fled" then return ns.LF("%s fled the duel", who or ns.L("they")) end
+        if last == "fled" then return who and ns.LF("fled a duel with %s", who) or ns.L("fled a duel") end
+        return who and ns.LF("lost a duel to %s", who) or ns.L("lost a duel")
     end
-    if up == down then return who and (up .. " each with " .. who) or (up .. " duels each") end
+    if up == down then return who and ns.LF("%d each with %s", up, who) or ns.LF("%d duels each", up) end
     local lead, rest = up, down
     if balance == "lost" then lead, rest = down, up end
     if rest == 0 then
         local Times = ns.UI.Format.Times
-        if balance == "won" then return who and ("beat " .. who .. " " .. Times(lead)) or ("won " .. lead .. " duels") end
-        return who and ("lost to " .. who .. " " .. Times(lead)) or ("lost " .. lead .. " duels")
+        if balance == "won" then return who and ns.LF("beat %s %s", who, Times(lead)) or ns.LF("won %d duels", lead) end
+        return who and ns.LF("lost to %s %s", who, Times(lead)) or ns.LF("lost %d duels", lead)
     end
-    local score = lead .. " to " .. rest
-    if balance == "won" then return who and ("beat " .. who .. " " .. score) or ("won " .. lead .. " duels to " .. rest) end
-    return who and ("lost to " .. who .. " " .. score) or ("lost " .. lead .. " duels to " .. rest)
+    local score = ns.LF("%d to %d", lead, rest)
+    if balance == "won" then return who and ns.LF("beat %s %s", who, score) or ns.LF("won %d duels to %d", lead, rest) end
+    return who and ns.LF("lost to %s %s", who, score) or ns.LF("lost %d duels to %d", lead, rest)
 end
 
 -- A line of a menu, where a spot merges several or one is hidden
@@ -110,7 +110,7 @@ end
 -- lost 1", "Lost 3, won 2", "Won both", "Lost all 3", and its flights on
 -- a line of their own, "They fled once", "You fled once, they fled
 -- twice". Figures, as tooltips count.
-local ONE = { won = "You won", lost = "You lost", they_fled = "They fled", fled = "You fled" }
+local ONE = { won = ns.L("You won"), lost = ns.L("You lost"), they_fled = ns.L("They fled"), fled = ns.L("You fled") }
 
 function Duels.Tip(rec, now)
     local balance, up, down = Duels.Score(rec)
@@ -123,24 +123,26 @@ function Duels.Tip(rec, now)
     else
         local lead, rest = up, down
         if balance == "lost" then lead, rest = down, up end
-        local verb, other = balance == "won" and "Won" or "Lost", balance == "won" and "lost" or "won"
+        local won = balance == "won"
         if rest > 0 then
-            lines[1] = verb .. " " .. lead .. ", " .. other .. " " .. rest
+            lines[1] = ns.LF(won and "Won %d, lost %d" or "Lost %d, won %d", lead, rest)
+        elseif lead == 2 then
+            lines[1] = ns.L(won and "Won both" or "Lost both")
         else
-            lines[1] = verb .. (lead == 2 and " both" or (" all " .. lead))
+            lines[1] = ns.LF(won and "Won all %d" or "Lost all %d", lead)
         end
         local Times = ns.UI.Format.Times
         local flights = {}
-        if (rec.fled or 0) > 0 then flights[#flights + 1] = "you fled " .. Times(rec.fled) end
-        if (rec.theyFled or 0) > 0 then flights[#flights + 1] = "they fled " .. Times(rec.theyFled) end
+        if (rec.fled or 0) > 0 then flights[#flights + 1] = ns.LF("you fled %s", Times(rec.fled)) end
+        if (rec.theyFled or 0) > 0 then flights[#flights + 1] = ns.LF("they fled %s", Times(rec.theyFled)) end
         if #flights > 0 then lines[#lines + 1] = Capital(table.concat(flights, ", ")) end
     end
     local sub = rec.subZone
-    if type(sub) == "string" and sub ~= "" and sub ~= MapName(rec.mapID) then lines[#lines + 1] = "In " .. sub end
+    if type(sub) == "string" and sub ~= "" and sub ~= MapName(rec.mapID) then lines[#lines + 1] = ns.LF("In %s", sub) end
     local j = ns.Journey.For and ns.Journey.For(ns.ownGUID)
     local level = j and ns.JourneyRecap and ns.JourneyRecap.LevelAt(j, rec.t or 0) or nil
     lines[#lines + 1] = When(rec.t or 0, level, now)
-    local title = who and ("Duelled " .. who) or (total <= 1 and "A duel" or (total .. " duels"))
+    local title = who and ns.LF("Duelled %s", who) or (total <= 1 and ns.L("A duel") or ns.LF("%d duels", total))
     return Capital(title), lines
 end
 
@@ -163,17 +165,17 @@ function Duels.Phrase(recs)
         up, down = up + u, down + d
     end
     local n = up + down
-    if n == 0 then return "a duel" end
-    if n == 1 then return up == 1 and "a duel won" or "a duel lost" end
+    if n == 0 then return ns.L("a duel") end
+    if n == 1 then return ns.L(up == 1 and "a duel won" or "a duel lost") end
     local count = NUMBER[n] or tostring(n)
-    if down == 0 then return count .. " duels won" end
-    if up == 0 then return count .. " duels lost" end
-    if up == down then return "duels won and lost" end
-    return up > down and "duels mostly won" or "duels mostly lost"
+    if down == 0 then return ns.LF("%s duels won", count) end
+    if up == 0 then return ns.LF("%s duels lost", count) end
+    if up == down then return ns.L("duels won and lost") end
+    return ns.L(up > down and "duels mostly won" or "duels mostly lost")
 end
 
 function Duels.Lead(recs, spot)
-    return Capital(Duels.Phrase(recs)) .. (spot and (" in " .. spot) or "")
+    return spot and ns.LF("%s in %s", Capital(Duels.Phrase(recs)), spot) or Capital(Duels.Phrase(recs))
 end
 
 -- The subzone a plate's series (route records) all started in, or nil

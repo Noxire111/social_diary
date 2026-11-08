@@ -62,7 +62,7 @@ local function Ornament(S, onUnlink)
     mark:SetText("\195\151")  -- the multiplication sign, U+00D7
     mark:SetTextColor(Style.INK_STRONG[1], Style.INK_STRONG[2], Style.INK_STRONG[3])
     cross:SetScript("OnClick", function() onUnlink(o.guid) end)
-    Style.Tooltip(cross, function() return "Unlink " .. (ns.Characters.Name(o.guid) or "them") end)
+    Style.Tooltip(cross, function() return ns.LF("Unlink %s", ns.Characters.Name(o.guid) or ns.L("them")) end)
     o.cross = cross
     return o
 end
@@ -144,7 +144,7 @@ function ns.UI.NoteSheet.New(parent)
     page:SetAllPoints(S)
     page.width = W - 2 * M
     page.count = Style.Text(page, FONT.small)
-    view.box = ns.UI.Entry.RuledNote(page, nil, "What happened? Write it down while you remember it.")
+    view.box = ns.UI.Entry.RuledNote(page, nil, ns.L("What happened? Write it down while you remember it."))
     view.page = page
 
     view.delete = K.Link(FONT.body, function()
@@ -152,14 +152,14 @@ function ns.UI.NoteSheet.New(parent)
         view.guid, view.kept = nil, false
         Done()
     end)
-    view.delete:SetText("Delete this note")
+    view.delete:SetText(ns.L("Delete this note"))
     view.delete:SetColor(Style.ACCENT[1], Style.ACCENT[2], Style.ACCENT[3])
 
     view.cancel = K.Link(FONT.body, function()
         view.guid, view.kept = nil, false
         Done()
     end)
-    view.cancel:SetText("Cancel")
+    view.cancel:SetText(ns.L("Cancel"))
 
     -- The note goes into the diary, or the changed one back, about everyone
     -- linked; a note being changed and emptied goes. Written but about
@@ -188,7 +188,7 @@ function ns.UI.NoteSheet.New(parent)
         view.guid, view.kept = nil, false
         Done(written)
     end)
-    view.save:SetText("Save")
+    view.save:SetText(ns.L("Save"))
 
     ----------------------------------------------------------------------
     -- Laying it out
@@ -198,7 +198,7 @@ function ns.UI.NoteSheet.New(parent)
     local function PlacePortraits()
         local list = { view.guid }
         for _, guid in ipairs(view.others) do list[#list + 1] = guid end
-        view.link:SetText((#list == 0 and "Link who it is about" or "Link others") .. ELLIPSIS)
+        view.link:SetText((#list == 0 and ns.L("Link who it is about") or ns.L("Link others")) .. ELLIPSIS)
         local size, y = PORTRAIT.size, SHEET.portraits
         local x, shown = M, 0
         for i, o in ipairs(view.portraits) do
@@ -226,11 +226,11 @@ function ns.UI.NoteSheet.New(parent)
 
     function Refresh()
         K.Lay()
-        view.title:SetText(view.editing and "Your note" or "A new note")
+        view.title:SetText(view.editing and ns.L("Your note") or ns.L("A new note"))
         K.PlaceText(view.title, M, SHEET.title)
         local note = view.editing
-        view.written:SetText(note and ("Written " .. ns.UI.Format.DayMonth(note.time, ns.Now())
-            .. (note.zone and (" in " .. note.zone) or "")) or "")
+        view.written:SetText(note and (note.zone and ns.LF("Written %s in %s", ns.UI.Format.DayMonth(note.time, ns.Now()), note.zone)
+            or ns.LF("Written %s", ns.UI.Format.DayMonth(note.time, ns.Now()))) or "")
         K.PlaceText(view.written, W - M, SHEET.title, "RIGHT")
         K.PlaceText(view.aboutLabel, M, SHEET.about)
         PlacePortraits()

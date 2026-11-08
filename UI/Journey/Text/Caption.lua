@@ -19,9 +19,10 @@ local Duration, NUMBER, Short = Text.Duration, Text.NUMBER, Text.Short
 -- "today", "yesterday", "Tuesday", or "4 October" past a week: the day a
 -- plate's caption names, as it reads after a comma.
 local function PlateDay(t, now)
-    local label = Format.DayLabel(t, now)
-    if label == "Today" or label == "Yesterday" then return label:lower() end
-    if now - t < 6 * ns.DAY then return date("%A", t) end
+    local back = Format.DayBack(t, now)
+    if back == 0 then return ns.L("today") end
+    if back == 1 then return ns.L("yesterday") end
+    if now - t < 6 * ns.DAY then return ns.LDate("%A", t) end
     return Day(t, now)
 end
 
@@ -33,12 +34,12 @@ end
 -- changed.
 function Text.PlateHeading(plate, now, before)
     now = now or ns.Now()
-    local zone = MapName(plate.mapID) or "Somewhere"
+    local zone = MapName(plate.mapID) or ns.L("Somewhere")
     if before and before.t and plate.t and plate.t >= before.t
         and ns.DayStart(plate.t) == ns.DayStart(before.t) then
-        local later = Spoken(plate.t - before.t) .. " later"
+        local later = ns.LF("%s later", Spoken(plate.t - before.t))
         if plate.mapID == before.mapID then return Capital(later), Capital(later), nil end
-        return Capital(later) .. ", in " .. zone, zone, later
+        return ns.LF("%s, in %s", Capital(later), zone), zone, later
     end
     local day = PlateDay(plate.t, now)
     return zone .. ", " .. day, zone, day
@@ -126,44 +127,44 @@ local LEADS = {
     -- Who you were with that no note beside the plate names.
     { at = 10, key = "people", say = function(c)
         if #c.people == 0 then return nil end
-        return "With " .. List(c.people, { max = 3, shown = 2, more = "others" })
+        return ns.LF("With %s", List(c.people, { max = 3, shown = 2, more = "others" }))
     end },
     -- Fights with strangers no note tells: "A fight, won", "Two fights".
     { at = 45, key = "fights", say = function(c)
         local strangers = c.strangers
         if #strangers == 0 then return nil end
-        if #strangers == 1 then return "A fight, " .. (strangers[1].outcome == "won" and "won" or "lost") end
-        return Capital(NUMBER[#strangers] or tostring(#strangers)) .. " fights"
+        if #strangers == 1 then return ns.L(strangers[1].outcome == "won" and "A fight, won" or "A fight, lost") end
+        return ns.LF("%s fights", Capital(NUMBER[#strangers] or tostring(#strangers)))
     end },
     { at = 100, key = "arrive", say = function(c)
         local arrive = c.of.arrive
         if not arrive then return nil end
-        if c.began and arrive.t <= c.began then return "Where the diary began" end
-        return "Into " .. (MapName(c.plate.mapID) or "a new zone") .. " for the first time"
+        if c.began and arrive.t <= c.began then return ns.L("Where the diary began") end
+        return ns.LF("Into %s for the first time", MapName(c.plate.mapID) or ns.L("a new zone"))
     end },
     { at = 110, key = "dungeon", say = function(c)
         local dungeon = c.of.dungeon
-        return dungeon and ("The way into " .. (dungeon.name or "a dungeon")) or nil
+        return dungeon and ns.LF("The way into %s", dungeon.name or ns.L("a dungeon")) or nil
     end },
     { at = 120, key = "stay", say = function(c)
         local stay = c.of.stay
         if not stay then return nil end
         local seg = stay.seg
-        local text = seg.subZone and seg.subZone ~= MapName(seg.mapID) and seg.subZone or "A long stay"
-        return text .. ", " .. Duration(stay.seconds or seg.seconds or 0)
+        local text = seg.subZone and seg.subZone ~= MapName(seg.mapID) and seg.subZone or ns.L("A long stay")
+        return ns.LF("%s, %s", text, Duration(stay.seconds or seg.seconds or 0))
     end },
     -- Someone a note beside the plate names already: what you did together
     -- is said, never who.
     { at = 130, key = "company", say = function(c)
-        if c.company == "fight" then return "Where the fighting was" end
-        if c.company then return "In good company" end
+        if c.company == "fight" then return ns.L("Where the fighting was") end
+        if c.company then return ns.L("In good company") end
         return nil
     end },
     { at = 150, key = "level", say = function(c)
-        return c.of.level and ("Level " .. c.of.level.level) or nil
+        return c.of.level and ns.LF("Level %s", c.of.level.level) or nil
     end },
 }
-local ROAD = "On the road"
+local ROAD = ns.L("On the road")
 
 -- The kinds, in the order they registered: each sorts into the lead,
 -- the tail and the codas by its own `at` there (Chain), so the registry
@@ -308,9 +309,9 @@ function Text.PlateCaption(plate, began, said)
         end
     end
     if #tail == 1 then
-        text = text .. ", and " .. tail[1]
+        text = ns.LF("%s, and %s", text, tail[1])
     elseif #tail > 1 then
-        text = text .. ", " .. table.concat(tail, ", ", 1, #tail - 1) .. ", and " .. tail[#tail]
+        text = ns.LF("%s, %s, and %s", text, table.concat(tail, ", ", 1, #tail - 1), tail[#tail])
     end
     text = text .. "."
     for _, coda in ipairs(C.codas) do

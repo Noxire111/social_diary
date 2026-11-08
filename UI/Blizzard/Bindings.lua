@@ -12,8 +12,8 @@ local addonName, ns = ...
 -- DIA-2's keybind
 --------------------------------------------------------------------------
 
-BINDING_HEADER_SOCIAL_DIARY = "Social Diary"
-BINDING_NAME_SOCIALDIARY_REMEMBER = "Remember this"
+BINDING_HEADER_SOCIAL_DIARY = ns.L("Social Diary")
+BINDING_NAME_SOCIALDIARY_REMEMBER = ns.L("Remember this")
 
 -- With a player targeted who is not in the diary yet, the page to add them
 -- on: that is the one-action case, and flow 1 ("helped me with Nagas") lives
@@ -41,7 +41,7 @@ end
 -- JNL-4's keybind, and the addon compartment
 --------------------------------------------------------------------------
 
-BINDING_NAME_SOCIALDIARY_JOURNAL = "Open the journal"
+BINDING_NAME_SOCIALDIARY_JOURNAL = ns.L("Open the journal")
 
 function SocialDiary_ToggleJournal()
     ns.UI.ToggleJournal()

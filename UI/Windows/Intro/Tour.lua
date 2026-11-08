@@ -149,26 +149,26 @@ local BLOT = { size = 5, alpha = 0.6, peak = 0.92, at = 0.35, from = 0.2 }
 -- foot: "Continue →" or the instruction. "30 days" is the live retention.
 -- Each link that leads on ends in an arrow the strip draws (the fonts have
 -- no "→": UI/Paper/Strip.lua's EXTRA.arrow), so its words end without one.
-local CONTINUE = "Continue"
+local CONTINUE = ns.L("Continue")
 local STEPS = {
-    { heading = "Social Diary",
-        words = function() return "Wherever you go, the diary marks your path. Each level you reach gets a page like this." end },
-    { heading = "What you did",
-        words = function() return "Red splats show where you've fought. Memorable moments, such as finding your first green item, are shown in cards." end },
-    { heading = "Who you met",
+    { heading = ns.L("Social Diary"),
+        words = function() return ns.L("Wherever you go, the diary marks your path. Each level you reach gets a page like this.") end },
+    { heading = ns.L("What you did"),
+        words = function() return ns.L("Red splats show where you've fought. Memorable moments, such as finding your first green item, are shown in cards.") end },
+    { heading = ns.L("Who you met"),
         words = function()
-            return "Any player you interact with, is written down automatically, like Bram and Thex. After "
-                .. ns.UI.Journal.PencilDays() .. " their data is deleted."
+            return ns.LF("Any player you interact with, is written down automatically, like Bram and Thex. After %s their data is deleted.",
+                ns.UI.Journal.PencilDays())
         end },
-    { heading = "Keep one",
-        words = function() return "To keep someone for good, add them to your diary." end,
-        todo = "Add Thex now." },
-    { heading = "Kept for good",
-        words = function() return "Thex is in your diary now. When you meet again, the diary will tell you." end,
-        todo = "Click him to see his page." },
+    { heading = ns.L("Keep one"),
+        words = function() return ns.L("To keep someone for good, add them to your diary.") end,
+        todo = ns.L("Add Thex now.") },
+    { heading = ns.L("Kept for good"),
+        words = function() return ns.L("Thex is in your diary now. When you meet again, the diary will tell you.") end,
+        todo = ns.L("Click him to see his page.") },
 }
 local WORDS = {
-    find = { heading = "Your first green!", item = "Wolfskin Bracers" },
+    find = { heading = ns.L("Your first green!"), item = ns.L("Wolfskin Bracers") },
     -- Bram: a stranger who saved you from Hogger with 8% of your health
     -- left. As a witness the player writes in (Core/Custom.lua's moment
     -- "witnessed"), the record the card reads: the deed, who, the creature
@@ -178,11 +178,11 @@ local WORDS = {
     bram = { deed = "saved", name = "Bram Redfen", creature = "Hogger", rank = "elite", bare = "yes", pct = 8,
         level = 6 },
     thex = { minutes = 35 },
-    add = "+ Add",
-    progress = "%d of 5",
-    ending = { heading = "An Example",
-        words = "This is how the people you add will look.",
-        begin = "Begin your own diary" },
+    add = ns.L("+ Add"),
+    progress = ns.L("%d of 5"),
+    ending = { heading = ns.L("An Example"),
+        words = ns.L("This is how the people you add will look."),
+        begin = ns.L("Begin your own diary") },
 }
 -- The find card's item: a green leather bracer's picture from the client's
 -- icons (a typed name has no link, so it takes the card's fallbacks, the
@@ -498,7 +498,7 @@ local function Build(parent)
     -- left before his name).
     local function ThexNote(n)
         local note = { name = ns.Sample.NAME, seed = "intro-thex",
-            what = ns.UI.Format.Duration(WORDS.thex.minutes * 60) .. " together" }
+            what = ns.LF("%s together", ns.UI.Format.Duration(WORDS.thex.minutes * 60)) }
         if n == 4 then
             note.aside = { text = WORDS.add, font = FONT.body, onClick = function() Tour.Add() end }
         elseif n >= 5 then

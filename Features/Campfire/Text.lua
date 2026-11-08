@@ -12,7 +12,7 @@ local Capital, MapName, When = Text.Capital, Text.MapName, Text.When
 -- The margin's slip for a campfire on a plate (Slip.lua): the user's own
 -- words (14 Oct), exactly, lower case and all, however many fires the
 -- plate has. Not to be reworded.
-Campfire.WORDS = "sat by a campfire"
+Campfire.WORDS = ns.L("sat by a campfire")
 
 -- The subzone a plate's campfires (records { t, subZone, ... }) all share,
 -- or nil where they differ, where one has none, or where it is only the
@@ -34,7 +34,7 @@ end
 function Campfire.Tip(fire, now)
     local lines = {}
     local sub = fire.subZone
-    if type(sub) == "string" and sub ~= "" and sub ~= MapName(fire.mapID) then lines[#lines + 1] = "In " .. sub end
+    if type(sub) == "string" and sub ~= "" and sub ~= MapName(fire.mapID) then lines[#lines + 1] = ns.LF("In %s", sub) end
     local j = ns.Journey.For and ns.Journey.For(ns.ownGUID)
     local level = j and ns.JourneyRecap and ns.JourneyRecap.LevelAt(j, fire.t or 0) or nil
     lines[#lines + 1] = When(fire.t or 0, level, now)
@@ -47,7 +47,7 @@ end
 -- or "A campfire, yesterday, 21:40" with no place to name.
 function Campfire.Describe(fire)
     local sub = fire.subZone
-    local place = type(sub) == "string" and sub ~= "" and sub or "A campfire"
+    local place = type(sub) == "string" and sub ~= "" and sub or ns.L("A campfire")
     return place .. ", " .. ns.UI.Format.At(fire.t or 0, ns.Now())
 end
 
@@ -67,7 +67,7 @@ end
 -- Its lead (`at` 140) comes after a long stay (120) and the company (130),
 -- before a level's pin (150); its tail (`at` 90) after every other kind's.
 local function Camped(fires)
-    if #fires == 1 or Campfire.At(fires) then return "a campfire" end
+    if #fires == 1 or Campfire.At(fires) then return ns.L("a campfire") end
     return "campfires"
 end
 
@@ -76,7 +76,7 @@ Text.RegisterCaption("campfire", {
     take = function(m) return m.campfire end,
     lead = { at = 140, say = function(fires, c)
         local spot = Campfire.At(fires, MapName(c.plate.mapID))
-        if c.said.campfire then return "By " .. Camped(fires) .. (spot and (" in " .. spot) or "") end
+        if c.said.campfire then return spot and ns.LF("By %s in %s", Camped(fires), spot) or ns.LF("By %s", Camped(fires)) end
         return spot
     end },
     tail = { at = 90, say = function(fires, c) return c.said.campfire and Camped(fires) or nil end },

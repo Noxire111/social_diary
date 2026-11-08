@@ -1,4 +1,4 @@
--- The "Remember this" picker (DIA-3, DIA-4).
+-- The ns.L("Remember this") picker (DIA-3, DIA-4).
 --
 -- Opened by the slash command. It lists everyone the client can still name,
 -- and one click opens the page to add them on; its Done adds them -- two
@@ -47,7 +47,7 @@ end
 
 local function Build()
     local panel = ns.UI.Chrome.Panel("SocialDiaryPickerFrame", 380,
-        52 + MAX_ROWS * ROW_HEIGHT + 40, "Remember this")
+        52 + MAX_ROWS * ROW_HEIGHT + 40, ns.L("Remember this"))
 
     panel.rows = {}
     for i = 1, MAX_ROWS do
@@ -58,7 +58,7 @@ local function Build()
     panel.empty:SetPoint("TOPLEFT", 18, -56)
 
     panel.hint = ns.UI.Chrome.Label(panel,
-        "|cff808080Click somebody to add them. Already in the diary opens their entry.|r",
+        ns.L("|cff808080Click somebody to add them. Already in the diary opens their entry.|r"),
         "GameFontDisableSmall")
     panel.hint:SetPoint("BOTTOMLEFT", 18, 18)
     panel.hint:SetPoint("RIGHT", -18, 0)
@@ -90,8 +90,8 @@ local function Refresh()
     end
 
     if #candidates == 0 then
-        picker.empty:SetText("Nobody to remember right now. Target someone, or"
-            .. " interact with them first.")
+        picker.empty:SetText(ns.L("Nobody to remember right now. Target someone, or"
+            .. " interact with them first."))
     else
         picker.empty:SetText("")
     end

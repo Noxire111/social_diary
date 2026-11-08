@@ -50,16 +50,16 @@ local function Gatherer(list, seen)
 end
 
 local function GatherUnits(add)
-    add(UnitGUID("target"), "your target", "target")
-    add(UnitGUID("mouseover"), "under your cursor", "mouseover")
-    add(UnitGUID("focus"), "your focus", "focus")
+    add(UnitGUID("target"), ns.L("your target"), "target")
+    add(UnitGUID("mouseover"), ns.L("under your cursor"), "mouseover")
+    add(UnitGUID("focus"), ns.L("your focus"), "focus")
 end
 
 local function GatherGroup(add)
     if IsInRaid and IsInRaid() then
         for i = 1, (GetNumGroupMembers and GetNumGroupMembers() or 0) do
             local unit = "raid" .. i
-            add(UnitGUID(unit), "in your raid", unit)
+            add(UnitGUID(unit), ns.L("in your raid"), unit)
         end
         return
     end
@@ -67,7 +67,7 @@ local function GatherGroup(add)
     for i = 1, 4 do
         local unit = "party" .. i
         if UnitExists(unit) then
-            add(UnitGUID(unit), "in your group", unit)
+            add(UnitGUID(unit), ns.L("in your group"), unit)
         end
     end
 end
@@ -103,10 +103,10 @@ ns.RegisterStore("recent", ns.Recent.Forget)
 -- DIA-3 names these explicitly: last whisperer, last trade partner, last
 -- resurrector or summoner. ns.Recent holds them for the session.
 local RECENT_KINDS = {
-    { "trade", "you traded with them" },
-    { "whisper", "they whispered you" },
-    { "resurrect", "they resurrected you" },
-    { "summon", "they summoned you" },
+    { "trade", ns.L("you traded with them") },
+    { "whisper", ns.L("they whispered you") },
+    { "resurrect", ns.L("they resurrected you") },
+    { "summon", ns.L("they summoned you") },
 }
 
 local function GatherRecent(add)
@@ -127,7 +127,7 @@ end
 local function GatherBuffer(add, now)
     local recent = ns.Interactions.Since(now - RECENT_WINDOW)
     for i = 1, #recent do
-        add(recent[i].guid, ns.Rows.Get(recent[i].type).reason or ("recent " .. recent[i].type))
+        add(recent[i].guid, ns.Rows.Get(recent[i].type).reason or ns.LF("recent %s", recent[i].type))
     end
 end
 

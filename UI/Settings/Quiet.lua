@@ -75,7 +75,7 @@ end
 
 local function RefreshQuietCount()
     local page = SettingsUI.page
-    page.quietCount:SetText(QuietCount() .. " quiet")
+    page.quietCount:SetText(ns.LF("%d quiet", QuietCount()))
 end
 
 local function UpdateQuietRow(row, item)
@@ -133,11 +133,11 @@ local function RefreshQuiet(keepScroll)
     local empty = ""
     if #list == 0 then
         if ns.Diary.Count() == 0 then
-            empty = "Nobody in the diary yet."
+            empty = ns.L("Nobody in the diary yet.")
         elseif quiet.search:find("%S") then
-            empty = "Nobody in the diary matches."
+            empty = ns.L("Nobody in the diary matches.")
         else
-            empty = "Nobody yet. Search your diary above to choose who."
+            empty = ns.L("Nobody yet. Search your diary above to choose who.")
         end
     end
     page.quietEmpty:SetText(empty)
@@ -147,7 +147,7 @@ end
 -- count, the list taking what room is left, and what it says when empty.
 local function Build(pane, c)
     local page = SettingsUI.page
-    page.quietSearch = Style.PageSearch(pane, 0, c.y, 236, "Search your diary",
+    page.quietSearch = Style.PageSearch(pane, 0, c.y, 236, ns.L("Search your diary"),
         Style.SearchInto(quiet, RefreshQuiet))
     page.quietCount = Style.Text(pane, FONT.small)
     page.quietCount:SetPoint("RIGHT", pane, "TOPRIGHT", 0, c.y - 12)

@@ -1,4 +1,4 @@
--- "Link others" for a note (DIA-11): a small card laid over the note's sheet
+-- ns.L("Link others") for a note (DIA-11): a small card laid over the note's sheet
 -- (UI/Paper/NoteSheet.lua), on the same paper (UI/Paper/Sheet.lua).
 --
 -- It lists everyone in the diary but the person the note is on, the likely
@@ -55,14 +55,14 @@ local function Sections(ctx)
     end
 
     local sections = {
-        { title = "WITH THEM THEN", list = Fresh(ns.Notes.Companions(ctx.guid, ctx.time)) },
-        { title = "WITH THEM BEFORE", list = Fresh(ns.Notes.Together(ctx.guid)) },
+        { title = ns.L("WITH THEM THEN"), list = Fresh(ns.Notes.Companions(ctx.guid, ctx.time)) },
+        { title = ns.L("WITH THEM BEFORE"), list = Fresh(ns.Notes.Together(ctx.guid)) },
     }
     local rest = {}
     for guid in ns.Diary.Each() do rest[#rest + 1] = guid end
     local function Name(guid) return (ns.Characters.FullName(guid) or guid):lower() end
     table.sort(rest, function(a, b) return Name(a) < Name(b) end)
-    sections[3] = { title = "EVERYONE ELSE", list = Fresh(rest) }
+    sections[3] = { title = ns.L("EVERYONE ELSE"), list = Fresh(rest) }
     return sections
 end
 
@@ -92,11 +92,11 @@ function ns.UI.LinkSheet.New(parent)
     view.onPutAway = function() view:Close() end
 
     view.title = Style.Text(S, FONT.page)
-    view.title:SetText("Link others")
+    view.title:SetText(ns.L("Link others"))
 
     local Fill
 
-    view.search = Style.PageSearch(S, M, -SHEET.search, W - 2 * M, "Search names, tags, notes",
+    view.search = Style.PageSearch(S, M, -SHEET.search, W - 2 * M, ns.L("Search names, tags, notes"),
         function() Fill() end)
 
     ----------------------------------------------------------------------
@@ -160,7 +160,7 @@ function ns.UI.LinkSheet.New(parent)
     view.list = ns.UI.Journal.List(S, ROW_H, math.floor(listH / ROW_H), BuildRow, UpdateRow)
 
     view.empty = Style.Text(S, FONT.faded)
-    view.empty:SetText("Nobody in the diary matches.")
+    view.empty:SetText(ns.L("Nobody in the diary matches."))
 
     -- The rule between the list and the footer, fading out at both ends
     -- like the profile's (Style.Rule).
@@ -174,7 +174,7 @@ function ns.UI.LinkSheet.New(parent)
 
     view.count = Style.Text(S, FONT.small)
     view.done = K.Link(FONT.strong, function() view:Close() end)
-    view.done:SetText("Done")
+    view.done:SetText(ns.L("Done"))
 
     -- The list for the search as it stands. `keep` holds the scroll, for a
     -- tick changing under the mouse.
@@ -198,7 +198,7 @@ function ns.UI.LinkSheet.New(parent)
         end
         view.list:SetData(data, keep)
         view.empty:SetShown(#data == 0)
-        view.count:SetText(linked > 0 and (linked .. " linked") or "")
+        view.count:SetText(linked > 0 and ns.LF("%d linked", linked) or "")
         K.PlaceText(view.count, M, SHEET.footer)
     end
 

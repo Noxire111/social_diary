@@ -1,6 +1,10 @@
 ## Interface: 16001
 ## Title: Social Diary
 ## Notes: Remembers the people you meet in the open world.
+## Title-esES: Diario Social
+## Notes-esES: Recuerda a la gente que te encuentras en el mundo abierto.
+## Title-esMX: Diario Social
+## Notes-esMX: Recuerda a la gente que te encuentras en el mundo abierto.
 ## Author: social-diary
 ## Version: 2.4.0
 ## SavedVariables: SocialDiaryDB
@@ -12,6 +16,26 @@
 ## X-License: GPL-3.0-or-later
 
 Core/Addon.lua
+# LOC-2: ns.L, ns.LF and ns.LDate need only ns (Addon.lua) and the client's
+# GetLocale, and every file below may translate at load, so the mechanism and
+# then the Spanish text (one file per area, each a call to ns.Locale.Register) load
+# right after the namespace and before anything that writes a word.
+Core/Locale.lua
+Locale/esES/Settings.lua
+Locale/esES/Slash.lua
+Locale/esES/Words.lua
+Locale/esES/Hints.lua
+Locale/esES/Chrome.lua
+Locale/esES/Intro.lua
+Locale/esES/Toast.lua
+Locale/esES/Journey.lua
+Locale/esES/Timeline.lua
+Locale/esES/Dungeon.lua
+Locale/esES/Person.lua
+Locale/esES/Features.lua
+Locale/esES/Journal.lua
+Locale/esES/Interface.lua
+Locale/esES/Dungeons.lua
 Core/DB.lua
 Core/Bridges/Questie.lua
 Core/Identity.lua

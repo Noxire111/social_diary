@@ -32,7 +32,7 @@ local function SortLabel()
 end
 
 -- The right-hand column follows the sort, so the list shows what it is
--- ordered by. Blank where the group heading already says it ("No Interactions yet").
+-- ordered by. Blank where the group heading already says it (ns.L("No Interactions yet")).
 local function PersonDetail(s)
     if J.query.sort == "timesMet" then
         return s.timesMet > 0 and Count(s.timesMet, "time", "times") or ""
@@ -54,17 +54,17 @@ local function Group(s, now)
 
     if sort == "lastSeen" then
         local at = ns.People.SeenAt(s)
-        if not at then return "Not seen yet" end
-        if now - at < 7 * DAY then return "Seen this week" end
-        if now - at < 30 * DAY then return "Seen this month" end
-        return "Seen earlier"
+        if not at then return ns.L("Not seen yet") end
+        if now - at < 7 * DAY then return ns.L("Seen this week") end
+        if now - at < 30 * DAY then return ns.L("Seen this month") end
+        return ns.L("Seen earlier")
     end
 
-    if not s.lastMet then return "No Interactions yet" end
+    if not s.lastMet then return ns.L("No Interactions yet") end
     if sort ~= "lastMet" then return nil end
-    if now - s.lastMet < 7 * DAY then return "This week" end
-    if now - s.lastMet < 30 * DAY then return "This month" end
-    return "Earlier"
+    if now - s.lastMet < 7 * DAY then return ns.L("This week") end
+    if now - s.lastMet < 30 * DAY then return ns.L("This month") end
+    return ns.L("Earlier")
 end
 
 local function WithGroups(list)
@@ -81,11 +81,11 @@ end
 
 local function ActiveFilters()
     local parts = {}
-    if J.query.tag then parts[#parts + 1] = "tag: " .. J.query.tag end
-    if J.query.relationship then parts[#parts + 1] = "relationship: " .. J.query.relationship end
-    if J.query.faction then parts[#parts + 1] = J.query.faction end
-    if J.query.zone then parts[#parts + 1] = "met in " .. J.query.zone end
-    if J.query.withinDays then parts[#parts + 1] = "met in the last " .. J.query.withinDays .. " days" end
+    if J.query.tag then parts[#parts + 1] = ns.LF("tag: %s", J.query.tag) end
+    if J.query.relationship then parts[#parts + 1] = ns.LF("relationship: %s", J.query.relationship) end
+    if J.query.faction then parts[#parts + 1] = ns.L(J.query.faction) end
+    if J.query.zone then parts[#parts + 1] = ns.LF("met in %s", J.query.zone) end
+    if J.query.withinDays then parts[#parts + 1] = ns.LF("met in the last %d days", J.query.withinDays) end
     return parts
 end
 
@@ -96,8 +96,8 @@ local function RefreshList(keepScroll)
     J.journal.people:SetData(WithGroups(list), keepScroll)
 
     local total = ns.Diary.Count()
-    J.journal.count:SetText(total == 0 and "nobody yet" or #list == total and ("%d in the diary"):format(total)
-        or ("%d of %d"):format(#list, total))
+    J.journal.count:SetText(total == 0 and ns.L("nobody yet") or #list == total and ns.LF("%d in the diary", total)
+        or ns.LF("%d of %d", #list, total))
 
     -- An empty diary has nothing to search or sort: the page teaches how
     -- someone gets in instead (UI/Journal/Empty.lua).
@@ -108,14 +108,14 @@ local function RefreshList(keepScroll)
     if empty then
         J.journal.emptyList:SetText("")
     elseif #list == 0 then
-        J.journal.emptyList:SetText("Nobody matches.")
+        J.journal.emptyList:SetText(ns.L("Nobody matches."))
     else
         J.journal.emptyList:SetText("")
     end
 
     local filters = ActiveFilters()
     J.journal.sortButton:SetText(SortLabel())
-    J.journal.filterButton:SetText(#filters == 0 and "All people" or Count(#filters, "filter", "filters"))
+    J.journal.filterButton:SetText(#filters == 0 and ns.L("All people") or Count(#filters, "filter", "filters"))
     J.journal.filters:SetText(#filters > 0 and table.concat(filters, "  ·  ") or "")
 end
 
@@ -171,7 +171,7 @@ end
 -- One submenu per facet, "any" first. Values come from the data, so a menu
 -- never offers a tag nobody has.
 local function FacetMenu(root, title, field, values)
-    local choices = { { label = "Any" } }
+    local choices = { { label = ns.L("Any") } }
     for _, value in ipairs(values) do choices[#choices + 1] = { label = value, key = value } end
     Field(root:CreateButton(title), field, choices)
 end
@@ -180,7 +180,7 @@ end
 -- search and filters are not.
 local function ShowSortMenu(owner)
     MenuUtil.CreateContextMenu(owner, function(_, root)
-        root:CreateTitle("Sort by")
+        root:CreateTitle(ns.L("Sort by"))
         Style.Choices(root, ns.People.SORTS, function() return J.query.sort end, function(key)
             J.query.sort = key
             ns.SetSetting("peopleSort", key)
@@ -201,23 +201,23 @@ local function ShowFilterMenu(owner)
     local facets = ns.People.Facets()
 
     MenuUtil.CreateContextMenu(owner, function(_, root)
-        root:CreateButton("Clear filters", function()
+        root:CreateButton(ns.L("Clear filters"), function()
             J.query.tag, J.query.relationship, J.query.faction, J.query.zone, J.query.withinDays =
                 nil, nil, nil, nil, nil
             RefreshList()
         end)
         root:CreateDivider()
 
-        FacetMenu(root, "Tag", "tag", facets.tags)
-        FacetMenu(root, "Relationship", "relationship", facets.relationships)
-        FacetMenu(root, "Faction", "faction", facets.factions)
-        FacetMenu(root, "Met in zone", "zone", facets.zones)
+        FacetMenu(root, ns.L("Tag"), "tag", facets.tags)
+        FacetMenu(root, ns.L("Relationship"), "relationship", facets.relationships)
+        FacetMenu(root, ns.L("Faction"), "faction", facets.factions)
+        FacetMenu(root, ns.L("Met in zone"), "zone", facets.zones)
 
-        local within = { { label = "Any time" } }
+        local within = { { label = ns.L("Any time") } }
         for _, option in ipairs(ns.People.WITHIN) do
             within[#within + 1] = { label = option.label, key = option.days }
         end
-        Field(root:CreateButton("Last met"), "withinDays", within)
+        Field(root:CreateButton(ns.L("Last met")), "withinDays", within)
     end)
 end
 
@@ -228,15 +228,15 @@ end
 local function BuildLeftPage(panel, book)
     J.query.sort = SavedSort()
 
-    panel.count = J.PageHeading(book, "People")
+    panel.count = J.PageHeading(book, ns.L("People"))
 
-    panel.search = Style.PageSearch(book, LEFT_X, -48, LEFT_W, "Search names, tags, notes",
+    panel.search = Style.PageSearch(book, LEFT_X, -48, LEFT_W, ns.L("Search names, tags, notes"),
         Style.SearchInto(J.query, RefreshList))
 
     local sortedBy = Style.Text(book, FONT.faded)
     panel.sortedBy = sortedBy
     sortedBy:SetPoint("LEFT", book, "TOPLEFT", LEFT_X, -86)
-    sortedBy:SetText("Sorted by")
+    sortedBy:SetText(ns.L("Sorted by"))
 
     panel.sortButton = Style.Link(book, FONT.body, function(self) ShowSortMenu(self) end)
     panel.sortButton:SetPoint("LEFT", sortedBy, "RIGHT", 5, 0)
@@ -275,7 +275,7 @@ J.RefreshList = RefreshList
 -- for the first time is given (the user's decision 1 on the stranger-glimpse
 -- proposal, 5 Nov 2026: whatever is simplest and breaks nothing).
 J.RegisterPage("people", {
-    order = 20, ribbon = { colour = "red", label = "People" }, leaf = 2, buildOrder = 10,
+    order = 20, ribbon = { colour = "red", label = ns.L("People") }, leaf = 2, buildOrder = 10,
     leaves = function() return J.EntryLeaf(J.selected) end,
     build = function(people, panel)
         BuildLeftPage(panel, people)
@@ -283,7 +283,7 @@ J.RegisterPage("people", {
 
         panel.emptyProfile = Style.Text(people, FONT.faded)
         panel.emptyProfile:SetPoint("TOPLEFT", BOOK.RIGHT_X, -BOOK.TOP - 8)
-        panel.emptyProfile:SetText("Choose someone from the list to read their page.")
+        panel.emptyProfile:SetText(ns.L("Choose someone from the list to read their page."))
 
         -- An empty diary's People page: how someone gets in, and what their
         -- page will be (UI/Journal/Empty.lua).

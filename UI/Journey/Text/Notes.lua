@@ -50,7 +50,7 @@ function Text.Note(e)
     if #text > NOTE.most then
         text = text:sub(1, NOTE.most - 2):gsub("[\192-\255][\128-\191]*$", ""):gsub("%s+$", "") .. "\226\128\166"
     end
-    local more = #e.notes > 1 and (#e.notes == 2 and "And one more note." or ("And %d more notes."):format(#e.notes - 1))
+    local more = #e.notes > 1 and (#e.notes == 2 and ns.L("And one more note.") or ns.LF("And %d more notes.", #e.notes - 1))
         or nil
     return "\226\128\156" .. text .. "\226\128\157", more
 end

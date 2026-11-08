@@ -42,7 +42,7 @@ ns.Rows.Register("campfire", {
     proximity = true,
     plate = 6,
     moment = function() return true end,
-    reason = "sat by a campfire together",
+    reason = ns.L("sat by a campfire together"),
     text = function(row, guid)
         local them = guid and ns.Characters.Name(guid)
         local subZone = row.context and row.context.subZone
@@ -53,8 +53,9 @@ ns.Rows.Register("campfire", {
         elseif subZone then
             place = subZone
         end
-        return (them and (ns.UI.Format.You(row.me, "{You} and ") .. them .. " sat") or "Sat") .. " by a campfire together"
-            .. (place and (" in " .. place) or "")
+        local text = them and ns.UI.Format.YouF(row.me, "{You} and %s sat by a campfire together", them)
+            or ns.L("Sat by a campfire together")
+        return place and ns.LF("%s in %s", text, place) or text
     end,
     icon = "campfire",
 })
@@ -123,12 +124,12 @@ end
 ns.JourneyRecap.RegisterMoment("campfire", { order = 70, list = "campfires", field = "campfire", rank = 5.5,
     light = true,
     custom = {
-        label = "Campfire",
-        heading = "A campfire",
+        label = ns.L("Campfire"),
+        heading = ns.L("A campfire"),
         group = "other",
         -- Text.lua's, read when asked: this file loads before it.
         describe = function(fire) return Campfire.Describe(fire) end,
         fields = {
-            { key = "subZone", type = "text", most = 40, label = "Where", hint = "a camp, a village, an oasis" },
+            { key = "subZone", type = "text", most = 40, label = ns.L("Where"), hint = ns.L("a camp, a village, an oasis") },
         },
     } })

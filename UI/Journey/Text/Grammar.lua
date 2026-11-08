@@ -55,7 +55,7 @@ local function Glue(text)
 end
 
 local function Capital(text)
-    return text:sub(1, 1):upper() .. text:sub(2)
+    return ns.UpperFirst(text)
 end
 
 local function MapName(mapID)
@@ -85,17 +85,17 @@ Text.Short = Short
 -- Counts, plurals and items (shared helpers, exported below)
 --------------------------------------------------------------------------
 
-local NUMBER = { "a", "two", "three", "four", "five" }
+local NUMBER = { ns.L("a", "Grammar"), ns.L("two"), ns.L("three"), ns.L("four"), ns.L("five") }
 
 local function Times(n, one, many)
     if n == 1 then return one end
-    if n == 2 then return many:format("twice") end
-    return many:format(n .. " times")
+    if n == 2 then return many:format(ns.L("twice")) end
+    return many:format(ns.LF("%d times", n))
 end
 
 -- A close call's health left (JRN-25), held together: "6% health".
 local function Health(call)
-    return Glue((call.pct or 0) .. "% health")
+    return Glue(ns.LF("%s%% health", call.pct or 0))
 end
 
 -- A number held to the word after it, as a time is ("31 Plainstriders"
@@ -113,7 +113,42 @@ local IRREGULAR = { tooth = "teeth", foot = "feet", mouse = "mice", louse = "lic
 local PLURAL = { { "ief$", "ieves" }, { "([lr])f$", "%1ves" }, { "fe$", "ves" }, { "man$", "men" },
     { "([^aeiouAEIOU])y$", "%1ies" }, { "([sxz])$", "%1es" }, { "([cs]h)$", "%1es" } }
 
+-- Spanish: the noun comes first ("Zancudo de la llanura"), so the first word
+-- that is not an article or a title takes the plural: a vowel takes -s, a
+-- consonant -es, -z becomes -ces, -s stays, and -ón/-án/-én/-ín/-ún lose their
+-- accent. A name that is already plural, or one this cannot tell, comes out
+-- as it went in (the sentence still reads); no attempt is made at adjectives.
+local SKIP_ES = { el = true, la = true, los = true, las = true, gran = true, viejo = true, vieja = true,
+    antiguo = true, antigua = true, joven = true, ["pequeño"] = true, ["pequeña"] = true }
+local ACCENTED = { ["\195\179n"] = "ones", ["\195\161n"] = "anes", ["\195\169n"] = "enes",
+    ["\195\173n"] = "ines", ["\195\186n"] = "unes" }
+
+local function PluralWordEs(word)
+    local lower = word:lower()
+    -- Compared on the word itself: lower() may touch the bytes of a letter with an accent.
+    local tail = word:sub(-3)
+    if ACCENTED[tail] then return word:sub(1, #word - 3) .. ACCENTED[tail] end
+    local last = lower:sub(-1)
+    if last == "z" then return word:sub(1, -2) .. "ces" end
+    if last == "s" or last == "x" then return word end
+    if lower:find("[aeiou\195\161\195\169\195\179]$") then return word .. "s" end
+    return word .. "es"
+end
+
+local function PluralEs(name)
+    local pos = 1
+    while true do
+        local s, e, word = name:find("([^%s]+)", pos)
+        if not s then return name end
+        if not SKIP_ES[word:lower()] then
+            return name:sub(1, s - 1) .. PluralWordEs(word) .. name:sub(e + 1)
+        end
+        pos = e + 1
+    end
+end
+
 local function Plural(name)
+    if ns.Locale.Active() then return PluralEs(name) end
     local head, tail = name:match("^(.-)( of .+)$")
     if head then return Plural(head) .. tail end
     local word = name:match("(%a+)$") or ""
@@ -143,7 +178,7 @@ local MASS = { meat = true, flesh = true, blood = true, ichor = true, silk = tru
 local MASS_ENDS = { "weed", "cloth", "meat", "silk", "dust", "moss", "wood" }
 
 local function ItemWord(n, item)
-    if n == 1 then return item end
+    if n == 1 or ns.Locale.Active() then return item end
     local last = (item:match("(%a+)$") or ""):lower()
     local mass = MASS[last] or (last:sub(-1) == "s" and last:sub(-2) ~= "ss")
     for _, e in ipairs(MASS_ENDS) do mass = mass or last:sub(-#e) == e end
@@ -151,6 +186,7 @@ local function ItemWord(n, item)
 end
 
 local function Items(n, item)
+    if ns.Locale.Active() then return Count(n .. " \195\151", item) end   -- "7 × Carne de zancudo"
     if n == 1 then return Count("one", item) end
     return Count(n, ItemWord(n, item))
 end
@@ -162,7 +198,9 @@ end
 function Text.KillerName(k)
     local name = k and k.name
     if not name or name == "" then return nil end
-    if k.bare or name:find("^[Tt]he ") or k.rank == "rare" or k.rank == "rareelite" or k.rank == "worldboss" then
+    -- Spanish needs the creature's gender for "un"/"una", which a name does
+    -- not give: it goes bare ("a manos de Zancudo de la llanura").
+    if ns.Locale.Active() or k.bare or name:find("^[Tt]he ") or k.rank == "rare" or k.rank == "rareelite" or k.rank == "worldboss" then
         return name
     end
     return (name:find("^[AEIOUaeiou]") and "an " or "a ") .. name

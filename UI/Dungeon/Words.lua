@@ -16,42 +16,47 @@ local Format = ns.UI.Format
 local Words = {}
 DungeonPage.Words = Words
 
-local ORDINAL = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth" }
-local NUMBER = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" }
+local ORDINAL, NUMBER = {}, {}
+for i, word in ipairs({ "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth" }) do
+    ORDINAL[i] = ns.L(word, "Dungeon")
+end
+for i, word in ipairs({ "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" }) do
+    NUMBER[i] = ns.L(word)
+end
 
-local function Capital(text) return (text:gsub("^%l", string.upper)) end
+local function Capital(text) return ns.UpperFirst(text) end
 Words.Capital = Capital
 
 -- "once", "twice", "three times" ... "ten times", then "11 times".
 local function Times(n)
-    if n == 1 then return "once" end
-    if n == 2 then return "twice" end
-    return (NUMBER[n] or tostring(n)) .. " times"
+    if n == 1 then return ns.L("once") end
+    if n == 2 then return ns.L("twice") end
+    return ns.LF("%s times", NUMBER[n] or tostring(n))
 end
 
 -- "Wiped once", "Wiped twice", "Wiped three times".
-function Words.Wipes(n) return "Wiped " .. Times(n) end
+function Words.Wipes(n) return ns.LF("Wiped %s", Times(n)) end
 
 -- The try that killed it, as a strip's heading where there was no wipe
 -- ("Killed on the third try"), or how often a boss still standing was
 -- tried ("Tried twice"). nil past the tenth try of a kill.
 function Words.Tries(n, killed)
-    if not killed then return "Tried " .. Times(n) end
+    if not killed then return ns.LF("Tried %s", Times(n)) end
     local on = Words.KilledOn(n)
     return on and Capital(on) or nil
 end
 
 -- Under a wipe: "killed on the second try". nil past the tenth.
 function Words.KilledOn(n)
-    return ORDINAL[n] and ("killed on the %s try"):format(ORDINAL[n]) or nil
+    return ORDINAL[n] and ns.LF("killed on the %s try", ORDINAL[n]) or nil
 end
 
 -- Under a boss's wipes or tries when it still stands.
-Words.STANDING = "left standing"
+Words.STANDING = ns.L("left standing")
 
 -- "Ran back once", "Ran back twice", and under it how (Words.GHOST).
-function Words.RanBack(n) return "Ran back " .. Times(n) end
-Words.GHOST = "as a ghost"
+function Words.RanBack(n) return ns.LF("Ran back %s", Times(n)) end
+Words.GHOST = ns.L("as a ghost")
 
 -- Whose loot `guid` is, as the page says it: "you", or their first name.
 local function Whose(visit, guid)
@@ -59,19 +64,19 @@ local function Whose(visit, guid)
     for _, m in ipairs(visit.members or {}) do
         if m.guid == guid and m.first then return m.first end
     end
-    return (ns.Characters.Name(guid)) or "someone"
+    return (ns.Characters.Name(guid)) or ns.L("someone")
 end
 Words.Whose = Whose
 
 -- An item that dropped for someone: "dropped for Tester", "dropped for you".
-function Words.Dropped(visit, guid) return "dropped for " .. Whose(visit, guid) end
+function Words.Dropped(visit, guid) return ns.LF("dropped for %s", Whose(visit, guid)) end
 
 -- Under an item found on the way, from trash (UI/Dungeon/Notes.lua's
 -- wayLoot), for whom: "dropped for Tester on the way", "dropped for you on
 -- the way". A boss's "dropped for" with the page's "on the way" (as "Wiped
 -- on the way"), so the two sit side by side; its tooltip line is the same,
 -- capitalised.
-function Words.FoundFor(visit, guid) return "dropped for " .. Whose(visit, guid) .. " on the way" end
+function Words.FoundFor(visit, guid) return ns.LF("dropped for %s on the way", Whose(visit, guid)) end
 
 -- Loot worth a note: the user's own, or a diary entry's (MAP-13). A
 -- stranger's is only counted.
@@ -100,15 +105,15 @@ function Words.Facts(visit, e)
     local others = 0
     for _, entry in ipairs(e.loot or {}) do
         if Words.Noted(visit, entry.guid) then
-            lines[#lines + 1] = ("%s, dropped for %s"):format(ns.Style.Inkify(entry.item or "?"), Whose(visit, entry.guid))
+            lines[#lines + 1] = ns.LF("%s, dropped for %s", ns.Style.Inkify(entry.item or "?"), Whose(visit, entry.guid))
         else
             others = others + 1
         end
     end
     if others == 1 then
-        lines[#lines + 1] = "One item for someone else"
+        lines[#lines + 1] = ns.L("One item for someone else")
     elseif others > 1 then
-        lines[#lines + 1] = Capital(NUMBER[others] or tostring(others)) .. " items for others"
+        lines[#lines + 1] = ns.LF("%s items for others", Capital(NUMBER[others] or tostring(others)))
     end
     return lines
 end
@@ -132,12 +137,12 @@ end
 -- (UI/Words/Timeline.lua's DeathText).
 function Words.Death(visit, death)
     local who = Capital(Whose(visit, death.guid))
-    local text = who .. " died"
+    local text = ns.LF("%s died", who)
     local k = death.killer
     if k and k.name and k.name ~= "" then
-        text = text .. (k.source == "recap" and " to " or ", probably to ") .. Killer(visit, k)
+        text = ns.LF(k.source == "recap" and "%s to %s" or "%s, probably to %s", text, Killer(visit, k))
     elseif k and k.environment then
-        text = text .. " (" .. k.environment:lower() .. ")"
+        text = ns.LF("%s (%s)", text, k.environment:lower())
     end
     return text
 end
@@ -148,9 +153,9 @@ end
 -- DungeonPage.Names).
 function Words.Leg(leg, names)
     names = names or {}
-    if leg.before then return ("On the way to %s"):format(names[leg.before.name] or leg.before.name) end
-    if leg.after then return ("After %s"):format(names[leg.after.name] or leg.after.name) end
-    return "On the way in"
+    if leg.before then return ns.LF("On the way to %s", names[leg.before.name] or leg.before.name) end
+    if leg.after then return ns.LF("After %s", names[leg.after.name] or leg.after.name) end
+    return ns.L("On the way in")
 end
 
 -- A wipe to trash on the way (MAP-17): "Wiped on the way", and under it
@@ -161,7 +166,7 @@ end
 -- plates' "Two deaths, to a Sunscale Lashtail."): the data knows the kind,
 -- not how many of them there were, so the diary guesses no plural. `wipe`
 -- is one of ns.DungeonRun.Notes(visit).wipes; nil when no death says.
-Words.WAY_WIPE = "Wiped on the way"
+Words.WAY_WIPE = ns.L("Wiped on the way")
 function Words.WipedTo(visit, wipe)
     local names, seen = {}, {}
     for _, death in ipairs(wipe and wipe.deaths or {}) do
@@ -176,8 +181,8 @@ function Words.WipedTo(visit, wipe)
         names[1] = Killer(visit, { name = wipe.killer })
     end
     if #names == 0 then return nil end
-    if #names > 2 then return "to " .. names[1] .. " and others" end
-    return "to " .. Format.List(names)
+    if #names > 2 then return ns.LF("to %s and others", names[1]) end
+    return ns.LF("to %s", Format.List(names))
 end
 
 -- The items one boss dropped for you and the diary's people, as one
@@ -187,7 +192,7 @@ end
 function Words.Items(links)
     local parts, text = {}, ""
     for i, link in ipairs(links) do
-        local sep = i == 1 and "" or (i == #links and " and " or ", ")
+        local sep = i == 1 and "" or (i == #links and ns.L(" and ") or ", ")
         text = text .. sep
         parts[i] = { text = link, from = text }
         text = text .. link
@@ -199,24 +204,24 @@ end
 function Words.DroppedFor(visit, guids)
     local names = {}
     for i, guid in ipairs(guids) do names[i] = Whose(visit, guid) end
-    return "dropped for " .. Format.List(names)
+    return ns.LF("dropped for %s", Format.List(names))
 end
 
 -- "and 2 more", under the notes there was no room for.
-function Words.More(n) return ("and %d more"):format(n) end
+function Words.More(n) return ns.LF("and %d more", n) end
 
 -- A near wipe (Core/DungeonRun.lua's NEAR): "Nearly wiped", and under it
 -- how many went down, "two went down" (the diary is not in the group, so
 -- no "us").
-Words.NEARLY = "Nearly wiped"
-function Words.WentDown(n) return ("%s went down"):format(NUMBER[n] or tostring(n)) end
+Words.NEARLY = ns.L("Nearly wiped")
+function Words.WentDown(n) return ns.LF("%s went down", NUMBER[n] or tostring(n)) end
 
 -- A level-up on the map: the bare level scrawled by its star ("22"), as
 -- the plates' level pins, and its tooltip, "Level 22" over who, as the
 -- plates' "Reached ...": "Reached by Tester", "Reached by you".
 function Words.LevelScrawl(level) return tostring(level) end
 function Words.LevelTip(visit, up)
-    return ns.Style.TipList(("Level %d"):format(up.level), { "Reached by " .. Whose(visit, up.guid) })
+    return ns.Style.TipList(ns.LF("Level %d", up.level), { ns.LF("Reached by %s", Whose(visit, up.guid)) })
 end
 
 -- A find on the way's mark (Print.lua's Finds), its tooltip: the item
@@ -238,12 +243,12 @@ end
 -- underlined, from their start: "Brom snagged it", "Finally!" (the user,
 -- 16 Oct).
 function Words.Snagged(visit, guid)
-    local part = ("%s snagged it"):format(Capital(Whose(visit, guid)))
-    return ("%s from %s"):format(part, Whose(visit, visit.me)), part
+    local part = ns.LF("%s snagged it", Capital(Whose(visit, guid)))
+    return ns.LF("%s from %s", part, Whose(visit, visit.me)), part
 end
-function Words.Versus(mine, theirs) return ("%d against %d"):format(mine, theirs) end
+function Words.Versus(mine, theirs) return ns.LF("%d against %d", mine, theirs) end
 function Words.Finally(total)
-    return ("Finally! After %s drops, it's yours"):format(NUMBER[total] or tostring(total)), "Finally!"
+    return ns.LF("Finally! After %s drops, it's yours", NUMBER[total] or tostring(total)), ns.L("Finally!")
 end
-function Words.Rolled(visit, guid, roll) return ("%s rolled a %d"):format(Capital(Whose(visit, guid)), roll) end
-function Words.OnItem(link) return "on " .. ns.Style.Inkify(link or "?") end
+function Words.Rolled(visit, guid, roll) return ns.LF("%s rolled a %d", Capital(Whose(visit, guid)), roll) end
+function Words.OnItem(link) return ns.L("on %s", "Dungeon"):format(ns.Style.Inkify(link or "?")) end

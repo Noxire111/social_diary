@@ -48,7 +48,7 @@ local NEVER = { ENTER = true, BACKSPACE = true, BUTTON1 = true, BUTTON2 = true }
 function Keys.Refused(key)
     return NEVER[key] == true
 end
-Keys.REFUSED = "That key stays with the game. Choose another."
+Keys.REFUSED = ns.L("That key stays with the game. Choose another.")
 
 -- The mouse's buttons as the bindings write them; the left and right are
 -- BUTTON1 and BUTTON2.
@@ -56,7 +56,7 @@ local BUTTONS = { LeftButton = "BUTTON1", RightButton = "BUTTON2", MiddleButton 
 function Keys.Button(button)
     return BUTTONS[button] or button:upper()
 end
-Keys.COMBAT = "Not during a fight. Try again after it."
+Keys.COMBAT = ns.L("Not during a fight. Try again after it.")
 
 -- What the setter asks before it takes `key` from what has it; nil when the
 -- key is free, or already `action`'s, and there is nothing to ask.
@@ -64,9 +64,9 @@ function Keys.Question(action, key)
     local taken = ActionName(GetBindingAction(key), action)
     if not taken then return nil end
     local shown = GetBindingText and GetBindingText(key) or key
-    return ("%s is set to %s.\n\nUse it for %s instead?"):format(shown, taken, ActionName(action))
+    return ns.LF("%s is set to %s.\n\nUse it for %s instead?", shown, taken, ActionName(action))
 end
-Keys.TAKE = "Use it"
+Keys.TAKE = ns.L("Use it")
 
 -- Binds `key` to `action` in place of whatever had it, and of the key
 -- `action` had. Saved with the character's or the account's bindings,
@@ -78,7 +78,7 @@ function Keys.Bind(action, key)
     for _, k in ipairs(old) do SetBinding(k) end
     SetBinding(key, action)
     SaveBindings(GetCurrentBindingSet())
-    return true, before and ("It was " .. before .. " until now.") or ""
+    return true, before and ns.LF("It was %s until now.", before) or ""
 end
 
 -- The key pressed, with its modifiers, as the bindings write it.
@@ -132,7 +132,7 @@ end
 -- a page never both take the keyboard.
 local listening
 
--- One binding's keycap, with "Choose one" or "Change" beside it, one line
+-- One binding's keycap, with ns.L("Choose one") or ns.L("Change") beside it, one line
 -- KEYCAP.h tall. `status` is where it answers (what the key did before, a
 -- refusal): a font string of the caller's, or else its own, under the
 -- keycap, for the caller to size and to anchor what follows to.
@@ -163,14 +163,14 @@ function Keys.Setter(parent, action, status)
         self.bind:SetShown(not self.listening)
         self.hint:SetShown(self.listening == true)
         if self.listening then
-            self.keycap:SetKey("press a key", FONT.headingRubric)
-            self.hint:SetText("Escape to cancel")
+            self.keycap:SetKey(ns.L("press a key"), FONT.headingRubric)
+            self.hint:SetText(ns.L("Escape to cancel"))
         elseif key then
             self.keycap:SetKey(key)
-            self.bind:SetText("Change")
+            self.bind:SetText(ns.L("Change"))
         else
-            self.keycap:SetKey("no key", FONT.faded)
-            self.bind:SetText("Choose one")
+            self.keycap:SetKey(ns.L("no key"), FONT.faded)
+            self.bind:SetText(ns.L("Choose one"))
         end
     end
 

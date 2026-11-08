@@ -486,20 +486,20 @@ local function CustomSpec(label, heading, at, defaults)
         label = label, heading = heading, group = "lore", at = at, defaults = defaults,
         wrap = Whole,
         describe = function(hunt)
-            return ("%s, %d killed"):format(hunt.item or heading, hunt.kills or 0)
+            return ns.LF("%s, %d killed", hunt.item or heading, hunt.kills or 0)
         end,
         fields = {
-            { key = "item", type = "text", label = "Item" },
-            { key = "need", type = "number", min = 1, max = 99, label = "How many" },
-            { key = "name", type = "text", label = "Creature" },
-            { key = "kills", type = "number", min = 1, max = 999, label = "Kills" },
-            { key = "expected", type = "number", min = 1, max = 999, label = "Expected", hint = "kills" },
+            { key = "item", type = "text", label = ns.L("Item") },
+            { key = "need", type = "number", min = 1, max = 99, label = ns.L("How many") },
+            { key = "name", type = "text", label = ns.L("Creature") },
+            { key = "kills", type = "number", min = 1, max = 999, label = ns.L("Kills") },
+            { key = "expected", type = "number", min = 1, max = 999, label = ns.L("Expected"), hint = ns.L("kills") },
         },
     }
 end
 
 ns.JourneyRecap.RegisterMoment("luck", { order = 30, entry = "hunts", field = "hunt", rank = 3,
-    custom = CustomSpec("Bad Luck", "Unlucky Quest Drops", 1, { need = 5, kills = 30 }),
+    custom = CustomSpec(ns.L("Bad Luck"), ns.L("Unlucky Quest Drops"), 1, { need = 5, kills = 30 }),
     gather = function(j, a, b, e)
         local usual = Hunts.UsualLuck(j) or false
         for _, hunt in ipairs(Hunts.List(j)) do
@@ -523,5 +523,5 @@ ns.JourneyRecap.RegisterMoment("luck", { order = 30, entry = "hunts", field = "h
         end
     end })
 ns.JourneyRecap.RegisterMoment("fortune", { order = 40, entry = "fortunes", field = "hunt", rank = 3, light = true,
-    custom = CustomSpec("Good Luck", "Lucky Quest Drops", 2, { need = 1, kills = 2, expected = 20 }),
+    custom = CustomSpec(ns.L("Good Luck"), ns.L("Lucky Quest Drops"), 2, { need = 1, kills = 2, expected = 20 }),
     gather = function() end })

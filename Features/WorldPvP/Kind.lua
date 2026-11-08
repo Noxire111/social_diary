@@ -76,24 +76,24 @@ local Place = ns.UI.TimelineText.Place
 
 local function Always() return true end
 
-ns.Rows.Register(KILL, { fight = "kill", plate = 1, moment = Always, reason = "you killed them",
+ns.Rows.Register(KILL, { fight = "kill", plate = 1, moment = Always, reason = ns.L("you killed them"),
     text = function(row, guid)
-        local them = guid and ns.Characters.Name(guid) or "them"
+        local them = guid and ns.Characters.Name(guid) or ns.L("them")
         local by = row.context and row.context.by
         local You = ns.UI.Format.You
-        if not by then return You(row.me, "{You} killed ") .. them .. Place(row) end
+        if not by then return ns.UI.Format.YouF(row.me, "{You} killed %s", them) .. Place(row) end
         local blow = ns.Characters.Name(by)
-        return You(row.me, "{Your} group killed ") .. them .. Place(row) .. (blow and (" (" .. blow .. "'s killing blow)") or "")
+        return ns.UI.Format.YouF(row.me, "{Your} group killed %s", them) .. Place(row) .. (blow and ns.LF(" (%s's killing blow)", blow) or "")
     end,
     icon = "hostile" })
 
-ns.Rows.Register(DEATH, { fight = "death", plate = 1, moment = Always, reason = "they killed you",
+ns.Rows.Register(DEATH, { fight = "death", plate = 1, moment = Always, reason = ns.L("they killed you"),
     text = function(row, guid)
         local c = row.context or {}
-        local them = guid and ns.Characters.Name(guid) or "They"
-        local with = c.spell and (" with " .. c.spell) or ""
-        local killed = c.probable and " probably killed {you}" or " killed {you}"
-        return them .. ns.UI.Format.You(row.me, killed) .. with .. Place(row)
+        local them = guid and ns.Characters.Name(guid) or ns.L("They")
+        local with = c.spell and ns.LF(" with %s", c.spell) or ""
+        local killed = c.probable and "%s probably killed {you}" or "%s killed {you}"
+        return ns.UI.Format.YouF(row.me, killed, them) .. with .. Place(row)
     end,
     icon = "death" })
 

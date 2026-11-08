@@ -81,7 +81,7 @@ local BLOT = {
 local KEY = { swatch = 8, step = 10, also = 6 }
 
 local function MapName(mapID)
-    return ns.MapName(mapID) or ("Map " .. mapID)
+    return ns.MapName(mapID) or ns.LF("Map %s", mapID)
 end
 
 local function HeatColor(t)
@@ -221,7 +221,7 @@ function ns.UI.MapSheet.New(parent)
         for _, entry in ipairs(view.maps) do
             choices[#choices + 1] = { label = ("%s (%d)"):format(MapName(entry.mapID), entry.total), key = entry.mapID }
         end
-        Style.ChoiceMenu(self, "Show map", choices, function() return view.mapID end, function(mapID)
+        Style.ChoiceMenu(self, ns.L("Show map"), choices, function() return view.mapID end, function(mapID)
             view.mapID = mapID
             view:Refresh()
         end)
@@ -236,7 +236,7 @@ function ns.UI.MapSheet.New(parent)
         end
     end
     view.everyoneButton = Link(Style.FONT.body, SetScope(true))
-    view.everyoneButton:SetText("Everyone")
+    view.everyoneButton:SetText(ns.L("Everyone"))
     view.bar = Style.Text(S, Style.FONT.small)
     view.bar:SetText("|")
     view.themButton = Link(Style.FONT.body, SetScope(false))
@@ -256,7 +256,7 @@ function ns.UI.MapSheet.New(parent)
     view.seenCross = Cross(12, "ARTWORK")
 
     view.alsoLabel = Style.Text(S, Style.FONT.heading)
-    view.alsoLabel:SetText("ALSO SEEN IN")
+    view.alsoLabel:SetText(ns.L("ALSO SEEN IN"))
     view.also = {}
     for i = 1, KEY.also do
         view.also[i] = Link(Style.FONT.body, function(self)
@@ -398,13 +398,13 @@ function ns.UI.MapSheet.New(parent)
             under[1]:SetShown(any)
             Place(under[1], left + (under[2] - 1) * KEY.step, y - KEY.swatch / 2, KEY.swatch, KEY.swatch)
         end
-        view.legend:SetText(any and ("%s here %s"):format(
-            view.everyone and "Your diary was seen" or "Seen", Format.Count(total or 0, "time", "times")) or "")
+        view.legend:SetText(any and ns.LF(view.everyone and "Your diary was seen here %s" or "Seen here %s",
+            Format.Count(total or 0, "time", "times")) or "")
         PlaceText(view.legend, left + 2 * KEY.step + KEY.swatch + 6, y)
 
         local record = view.marker:IsShown() and ns.Characters.Get(view.guid) or nil
         local when = record and record.seen and record.seen.time or nil
-        view.seen:SetText(when and ("Last seen " .. Format.At(when)) or "")
+        view.seen:SetText(when and ns.LF("Last seen %s", Format.At(when)) or "")
         local seenLeft = PlaceText(view.seen, W - left, y, "RIGHT")
         view.seenCross:Place(seenLeft - 9, y)
         view.seenCross:SetShown(when ~= nil)
@@ -437,7 +437,7 @@ function ns.UI.MapSheet.New(parent)
 
         local record = self.guid and ns.Characters.Get(self.guid)
         local first = record and ns.Characters.Name(self.guid)
-        self.themButton:SetText(first and ("Just " .. first:match("^(%S+)")) or "Just them")
+        self.themButton:SetText(first and ns.LF("Just %s", first:match("^(%S+)")) or ns.L("Just them"))
         self.themButton:SetCurrent(not self.everyone)
         self.everyoneButton:SetCurrent(self.everyone == true)
 
@@ -446,9 +446,9 @@ function ns.UI.MapSheet.New(parent)
             DrawHeat({}, 0, mx, my, mw, mh, crop)
             self.marker:Hide()
             self.mapID = nil
-            self.mapButton:SetText("No maps yet")
-            self.empty:SetText(self.everyone and "Nobody from your diary seen on a map yet."
-                or "Not seen on a map yet.\nThis fills in as you see them nearby.")
+            self.mapButton:SetText(ns.L("No maps yet"))
+            self.empty:SetText(self.everyone and ns.L("Nobody from your diary seen on a map yet.")
+                or ns.L("Not seen on a map yet.\nThis fills in as you see them nearby."))
             PlaceText(self.empty, mx + mw / 2, my + mh / 2, "CENTER")
             FillHeader()
             FillKey(maps, 0, my, mh)

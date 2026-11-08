@@ -177,12 +177,12 @@ function Parcel.BuildTorn(host, S)
     for i = 1, N.most do note.lines[i] = Style.Text(sheet, FONT.pencil) end
     note.count = Style.Text(sheet, FONT.pencil)
     note.open = K.Link(FONT.strong, function() ns.UI.ShowIntro() end)
-    note.open:SetText("Open me")
+    note.open:SetText(ns.L("Open me"))
     note.later = K.Link(FONT.body, function()
         Parcel.later = true
         ns.UI.Parcel.HideSlip(false)
     end)
-    note.later:SetText("Later")
+    note.later:SetText(ns.L("Later"))
     host.note, host.K = note, K
 end
 

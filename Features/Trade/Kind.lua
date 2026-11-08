@@ -61,11 +61,11 @@ ns.Rows.Register("trade", { proximity = true, plate = 7, opens = true, meeting =
     text = function(row)
         local c = row.context or {}
         local parts = {}
-        if c.given then parts[#parts + 1] = "gave " .. Items(c.given) end
-        if c.moneyGiven then parts[#parts + 1] = "gave " .. ns.UI.Format.Money(c.moneyGiven) end
-        if c.received then parts[#parts + 1] = "got " .. Items(c.received) end
-        if c.moneyReceived then parts[#parts + 1] = "got " .. ns.UI.Format.Money(c.moneyReceived) end
-        if #parts == 0 then return "Traded" end
-        return "Traded: " .. table.concat(parts, "; ")
+        if c.given then parts[#parts + 1] = ns.LF("gave %s", Items(c.given)) end
+        if c.moneyGiven then parts[#parts + 1] = ns.LF("gave %s", ns.UI.Format.Money(c.moneyGiven)) end
+        if c.received then parts[#parts + 1] = ns.LF("got %s", Items(c.received)) end
+        if c.moneyReceived then parts[#parts + 1] = ns.LF("got %s", ns.UI.Format.Money(c.moneyReceived)) end
+        if #parts == 0 then return ns.L("Traded") end
+        return ns.LF("Traded: %s", table.concat(parts, "; "))
     end,
     icon = "trade" })

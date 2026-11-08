@@ -24,19 +24,19 @@ end
 
 -- DAT-4: stored as server epoch, shown relative or in local time.
 function Format.Ago(time, now)
-    if not time then return "never" end
+    if not time then return ns.L("never") end
     now = now or ns.Now()
     local days = math.floor((now - time) / ns.DAY)
-    if days < 1 then return "today" end
-    if days < 2 then return "yesterday" end
-    if days < 14 then return days .. " days ago" end
-    if days < 60 then return math.floor(days / 7) .. " weeks ago" end
-    return date("%d %b %Y", time)
+    if days < 1 then return ns.L("today") end
+    if days < 2 then return ns.L("yesterday") end
+    if days < 14 then return ns.LF("%d days ago", days) end
+    if days < 60 then return ns.LF("%d weeks ago", math.floor(days / 7)) end
+    return ns.LDate("%d %b %Y", time)
 end
 
 -- "1 time", "3 times".
 function Format.Count(n, one, many)
-    return n .. " " .. (n == 1 and one or many)
+    return n .. " " .. ns.L(n == 1 and one or many)
 end
 
 -- "Mulgore", "Mulgore and Durotar", "Mulgore, Durotar and The Barrens".
@@ -57,12 +57,19 @@ function Format.List(names, opts)
 
     if opts.max and n > opts.max then
         local shown = opts.shown or opts.max
-        return ("%s and %d %s"):format(table.concat(names, ", ", 1, shown), n - shown, opts.more or "more")
+        return ns.LF("%s and %d %s", table.concat(names, ", ", 1, shown), n - shown, ns.L(opts.more or "more"))
     end
 
     if n == 1 then return names[1] end
-    if n == 2 then return names[1] .. " and " .. names[2] end
-    return table.concat(names, ", ", 1, n - 1) .. (opts.oxford and ", and " or " and ") .. names[n]
+    -- Spanish: "y", which becomes "e" before an i- or hi- sound, and no
+    -- comma before it (the Oxford comma is English's).
+    local join = ns.L(" and ")
+    if ns.Locale.Active() then
+        local following = names[n]:lower():gsub("^[^%a\195]+", "")
+        join = (following:find("^h?i") and not following:find("^hie") or following:find("^\195\173")) and " e " or " y "
+    end
+    if n == 2 then return names[1] .. join .. names[2] end
+    return table.concat(names, ", ", 1, n - 1) .. ((opts.oxford and not ns.Locale.Active()) and ", and " or join) .. names[n]
 end
 
 --------------------------------------------------------------------------
@@ -73,7 +80,7 @@ end
 -- "yesterday", not "today".
 
 -- 0 when `time` falls on `now`'s day, 1 on the day before, nil otherwise.
-local function DaysBack(time, now)
+local function DaysBack(time, now)  -- also Format.DayBack, for words that tell today and yesterday apart  -- also Format.DayBack, for words that tell today and yesterday apart
     local day = date("%Y-%m-%d", time)
     if day == date("%Y-%m-%d", now) then return 0 end
     if day == date("%Y-%m-%d", now - ns.DAY) then return 1 end
@@ -84,8 +91,10 @@ end
 -- 2025". Without it, never -- for a page that only reaches back as far as
 -- the buffer does.
 function Format.DayMonth(time, now)
-    local text = tonumber(date("%d", time)) .. date(" %B", time)
-    if now and date("%Y", time) ~= date("%Y", now) then text = text .. date(" %Y", time) end
+    local text = ns.L("%d %s", "Words"):format(tonumber(date("%d", time)), ns.LDate("%B", time))
+    if now and date("%Y", time) ~= date("%Y", now) then
+        text = ns.L("%s %s", "Words"):format(text, date("%Y", time))
+    end
     return text
 end
 
@@ -94,9 +103,9 @@ end
 function Format.DayLabel(time, now)
     now = now or ns.Now()
     local back = DaysBack(time, now)
-    if back == 0 then return "Today" end
-    if back == 1 then return "Yesterday" end
-    return date("%A, ", time) .. Format.DayMonth(time, now)
+    if back == 0 then return ns.L("Today") end
+    if back == 1 then return ns.L("Yesterday") end
+    return ns.UpperFirst(ns.LDate("%A, ", time)) .. Format.DayMonth(time, now)
 end
 
 -- "today at 21:43", "yesterday at 18:02", "on 12 Sep at 18:02"; the year is
@@ -106,17 +115,17 @@ function Format.At(time, now)
     local clock = date("%H:%M", time)
     local back = DaysBack(time, now)
 
-    if back == 0 then return "today at " .. clock end
-    if back == 1 then return "yesterday at " .. clock end
+    if back == 0 then return ns.LF("today at %s", clock) end
+    if back == 1 then return ns.LF("yesterday at %s", clock) end
     if date("%Y", time) == date("%Y", now) then
-        return date("on %d %b at ", time) .. clock
+        return ns.LF("on %s at %s", ns.LDate("%d %b", time), clock)
     end
-    return date("on %d %b %Y at ", time) .. clock
+    return ns.LF("on %s at %s", ns.LDate("%d %b %Y", time), clock)
 end
 
 -- The profile's "last seen" line, from a character record's `seen`.
 function Format.SeenText(seen, now)
-    if not seen then return "Not seen nearby yet." end
+    if not seen then return ns.L("Not seen nearby yet.") end
 
     -- Subzone first, as every place is written: "Goldshire, Elwynn Forest".
     local place = seen.zone
@@ -124,14 +133,15 @@ function Format.SeenText(seen, now)
         place = seen.subZone .. ", " .. place
     end
 
-    return "Last seen " .. Format.At(seen.time, now) .. (place and (" in " .. place) or "")
+    if place then return ns.LF("Last seen %s in %s", Format.At(seen.time, now), place) end
+    return ns.LF("Last seen %s", Format.At(seen.time, now))
 end
 
 -- "once", "twice", "5 times".
 function Format.Times(n)
-    if n == 1 then return "once" end
-    if n == 2 then return "twice" end
-    return n .. " times"
+    if n == 1 then return ns.L("once") end
+    if n == 2 then return ns.L("twice") end
+    return ns.LF("%d times", n)
 end
 
 -- The score with a foe, from Interactions.Fights: "You've killed them twice and
@@ -145,15 +155,17 @@ function Format.FightsText(fights, em, short)
     em = em or tostring
     local kills
     if fights.kills > 0 then
-        local who = (short or fights.yours == fights.kills) and "You've"
-            or fights.yours == 0 and "Your group has" or "You and your group have"
-        kills = who .. " killed them " .. em(Format.Times(fights.kills))
+        local template = (short or fights.yours == fights.kills) and "You've killed them %s"
+            or fights.yours == 0 and "Your group has killed them %s" or "You and your group have killed them %s"
+        kills = ns.LF(template, em(Format.Times(fights.kills)))
     end
-    local deaths = fights.deaths > 0 and ("killed you " .. em(Format.Times(fights.deaths))) or nil
+    local deaths = fights.deaths > 0 and em(Format.Times(fights.deaths)) or nil
 
-    if kills and deaths then return kills .. (short and ", they've " or " and they've ") .. deaths .. "." end
-    if kills then return kills .. "." end
-    if deaths then return "They've " .. deaths .. "." end
+    if kills and deaths then
+        return ns.LF(short and "%s, they've killed you %s." or "%s and they've killed you %s.", kills, deaths)
+    end
+    if kills then return ns.LF("%s.", kills) end
+    if deaths then return ns.LF("They've killed you %s.", deaths) end
     return nil
 end
 
@@ -164,9 +176,9 @@ function Format.Money(copper)
     local rest = copper % 100
 
     local parts = {}
-    if gold > 0 then parts[#parts + 1] = gold .. "g" end
-    if silver > 0 then parts[#parts + 1] = silver .. "s" end
-    if rest > 0 or #parts == 0 then parts[#parts + 1] = rest .. "c" end
+    if gold > 0 then parts[#parts + 1] = gold .. ns.L("g", "Words") end
+    if silver > 0 then parts[#parts + 1] = silver .. ns.L("s", "Words") end
+    if rest > 0 or #parts == 0 then parts[#parts + 1] = rest .. ns.L("c", "Words") end
     return table.concat(parts, " ")
 end
 
@@ -207,6 +219,10 @@ local YOU_FOR = {
 }
 
 -- Whether `me` is "you": the character playing, or as good as.
+Format.DayBack = DaysBack
+
+Format.DayBack = DaysBack
+
 function Format.IsYou(me)
     return not ns.diaryShared or me == nil or me == ns.ownGUID or Format.YouName(me) == nil
 end
@@ -217,23 +233,39 @@ function Format.YouName(me)
     return own and own.first or (me and ns.Characters.Name(me)) or nil
 end
 
+-- `text` is looked up in the language first, so a caller passes the English
+-- sentence and a translation brings its own braces. Spanish conjugates, so
+-- its braces hold both forms, "{Mataste|$n mató} a Bram": the first for the
+-- character playing, the second for another ($n their name).
 function Format.You(me, text)
-    if Format.IsYou(me) then return (text:gsub("{(.-)}", "%1")) end
+    text = ns.L(text)
+    if Format.IsYou(me) then
+        return (text:gsub("{(.-)}", function(word) return (word:match("^(.-)|") or word) end))
+    end
     local name = Format.YouName(me)
     return (text:gsub("{(.-)}", function(word)
+        local other = word:match("|(.*)$")
+        if other then return (other:gsub("%$n", function() return name end)) end
         local form = YOU_FOR[word:lower()]
         return form and form:format(name) or word
     end))
 end
 
-local RACE_NAMES = { Scourge = "Undead", NightElf = "Night Elf" }
+-- You(me, template) with the template's %s/%d filled in after the language
+-- and the braces have been settled, so a translation may reorder nothing but
+-- may carry its own braces.
+function Format.YouF(me, template, ...)
+    return Format.You(me, template):format(...)
+end
+
+local RACE_NAMES = { Scourge = ns.L("Undead"), NightElf = ns.L("Night Elf") }
 
 function Format.RaceName(record)
     if record.raceID and C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
         local info = C_CreatureInfo.GetRaceInfo(record.raceID)
         if info and type(info.raceName) == "string" then return info.raceName end
     end
-    return record.race and (RACE_NAMES[record.race] or record.race)
+    return record.race and (RACE_NAMES[record.race] or ns.L(record.race, "Words"))
 end
 
 function Format.ClassName(record)
@@ -241,7 +273,7 @@ function Format.ClassName(record)
     if not token then return nil end
     local names = record.sex == 3 and LOCALIZED_CLASS_NAMES_FEMALE or LOCALIZED_CLASS_NAMES_MALE
     if names and names[token] then return names[token] end
-    return token:sub(1, 1) .. token:sub(2):lower()
+    return ns.L(token:sub(1, 1) .. token:sub(2):lower(), "Words")
 end
 
 -- "Level 6 Tauren Druid  ·  Horde  <Guild>", inked for the page. With
@@ -251,7 +283,7 @@ end
 function Format.WhoLine(record, guild, dropOwn)
     record = record or {}
     local parts = {}
-    if record.level then parts[#parts + 1] = "Level " .. record.level end
+    if record.level then parts[#parts + 1] = ns.LF("Level %s", record.level) end
     parts[#parts + 1] = Format.RaceName(record)
     parts[#parts + 1] = Format.ClassName(record)
 
@@ -259,7 +291,7 @@ function Format.WhoLine(record, guild, dropOwn)
     local own = dropOwn == "always" or (dropOwn and record.faction == UnitFactionGroup("player"))
     if not own and (record.faction == "Horde" or record.faction == "Alliance") then
         local hex = record.faction == "Horde" and ns.Style.HEX.horde or ns.Style.HEX.alliance
-        text = text .. (text ~= "" and "  ·  " or "") .. "|cff" .. hex .. record.faction .. "|r"
+        text = text .. (text ~= "" and "  ·  " or "") .. "|cff" .. hex .. ns.L(record.faction) .. "|r"
     end
 
     if guild then text = text .. "  |cff" .. ns.Style.HEX.faded .. "<" .. guild .. ">|r" end

@@ -64,20 +64,20 @@ ns.Chat = Chat
 local Quote = ns.UI.TimelineText.Quote
 
 ns.Rows.Register("whisper_in", { chat = true, plate = 7, dealt = "talk", matters = true, activity = "chat",
-    text = function(row) return Quote(row.excerpt, "They whispered") end,
+    text = function(row) return Quote(row.excerpt, ns.L("They whispered")) end,
     icon = "whisper" })
 ns.Rows.Register("whisper_out", { chat = true, plate = 7, dealt = "talk", matters = true, activity = "chat",
     text = function(row) return Quote(row.excerpt, ns.UI.Format.You(row.me, "{You} whispered")) end,
     icon = "whisper" })
 ns.Rows.Register("say", { chat = true, plate = 7, proximity = true, opens = true, dealt = "talk", matters = true,
     activity = "chat",
-    text = function(row) return Quote(row.excerpt, "Said") end,
+    text = function(row) return Quote(row.excerpt, ns.L("Said")) end,
     icon = "talk" })
 ns.Rows.Register("yell", { chat = true, plate = 7, proximity = true, opens = true, dealt = "talk", activity = "chat",
-    text = function(row) return Quote(row.excerpt, "Yelled") end,
+    text = function(row) return Quote(row.excerpt, ns.L("Yelled")) end,
     icon = "talk" })
 ns.Rows.Register("party", { chat = true, plate = 7, dealt = "talk", activity = "chat",
-    text = function(row) return Quote(row.excerpt, "Said in party") end,
+    text = function(row) return Quote(row.excerpt, ns.L("Said in party")) end,
     icon = "party" })
 
 --------------------------------------------------------------------------

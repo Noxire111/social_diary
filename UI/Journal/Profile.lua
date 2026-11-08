@@ -63,7 +63,7 @@ end
 --------------------------------------------------------------------------
 --
 -- On a loose sheet over the book (UI/Paper/NoteSheet.lua), like the map: from
--- the "Add a note" tab for a new one, or a note clicked on the timeline to
+-- the ns.L("Add a note") tab for a new one, or a note clicked on the timeline to
 -- change it. The page stays as it is under it.
 
 local RefreshProfile
@@ -222,7 +222,7 @@ local function BuildProfile(panel, book)
     end
 
     -- Index tabs out of the book's right edge.
-    p.tabStory = Style.SideTab(p, "book", "Their story", function()
+    p.tabStory = Style.SideTab(p, "book", ns.L("Their story"), function()
         J.tab = "timeline"
         J.EndEdit()
         RefreshProfile()
@@ -230,7 +230,7 @@ local function BuildProfile(panel, book)
     p.tabStory:SetPoint("TOPLEFT", panel, "TOPRIGHT", -3, -72)
 
     -- Open, its tab puts the sheet away again.
-    p.tabMap = Style.SideTab(p, "map", "Where you saw them", function()
+    p.tabMap = Style.SideTab(p, "map", ns.L("Where you saw them"), function()
         J.tab = J.tab == "map" and "timeline" or "map"
         J.EndEdit()
         RefreshProfile()
@@ -243,7 +243,7 @@ local function BuildProfile(panel, book)
         J.tab = "timeline"
         RefreshProfile()
     end
-    p.tabNote = Style.SideTab(p, "note", "Add a note", function() OpenNote(nil) end)
+    p.tabNote = Style.SideTab(p, "note", ns.L("Add a note"), function() OpenNote(nil) end)
     p.tabNote:SetPoint("TOPLEFT", p.tabMap, "BOTTOMLEFT", 0, -6)
 
     -- Writing mode is a page of its own, so this tab is lit while it shows,

@@ -19,15 +19,15 @@ local MapName = Text.MapName
 
 -- "The Barrens", "levels 10 to 14 · 3 h 20 min".
 function Text.ZoneName(z)
-    return MapName(z.mapID) or ("Map " .. z.mapID)
+    return MapName(z.mapID) or ns.LF("Map %s", z.mapID)
 end
 
 function Text.ZoneLine(z)
     local levels
     if z.levelMin and z.levelMax and z.levelMin ~= z.levelMax then
-        levels = ("levels %d to %d"):format(z.levelMin, z.levelMax)
+        levels = ns.LF("levels %d to %d", z.levelMin, z.levelMax)
     elseif z.levelMin then
-        levels = "level " .. z.levelMin
+        levels = ns.LF("level %s", z.levelMin)
     end
     local parts = {}
     if levels then parts[#parts + 1] = levels end
@@ -41,7 +41,7 @@ function Text.ZoneFoot(z, names, fights)
     local line = Text.ZoneLine(z)
     local parts = { line ~= "" and line or nil }
     local list = List(names or {}, { max = 4, shown = 3, more = "others" })
-    if list then parts[#parts + 1] = "with " .. list end
-    if (fights or 0) > 0 then parts[#parts + 1] = fights == 1 and "a fight" or (fights .. " fights") end
+    if list then parts[#parts + 1] = ns.LF("with %s", list) end
+    if (fights or 0) > 0 then parts[#parts + 1] = fights == 1 and ns.L("a fight") or ns.LF("%d fights", fights) end
     return table.concat(parts, "  \194\183  ")
 end

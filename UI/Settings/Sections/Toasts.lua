@@ -18,15 +18,15 @@ local function BuildToasts(pane, c)
 
     -- Two switches, neither under the other: nearby toasts without the
     -- group ones is a fair thing to want. The cooldown is both kinds'.
-    c:Heading("When they show")
-    page.toasts = Switch(c, "Show a toast when someone from your diary joins your group", "toasts")
-    page.nearbyToasts = Switch(c, "Show a toast when someone from your diary comes into view",
+    c:Heading(ns.L("When they show"))
+    page.toasts = Switch(c, ns.L("Show a toast when someone from your diary joins your group"), "toasts")
+    page.nearbyToasts = Switch(c, ns.L("Show a toast when someone from your diary comes into view"),
         "nearbyToasts")
-    page.toastCooldown = Number(c, "At most one toast per person every", "min",
+    page.toastCooldown = Number(c, ns.L("At most one toast per person every"), ns.L("min"),
         "toastCooldownMinutes", 1, 720)
     DependsOn(page.toastCooldown, function() return Saved().toasts or Saved().nearbyToasts end)
-    page.foeToastsUncooled = Switch(c, "Ignore toast cooldown for foes", "foeToastsUncooled", INDENT,
-        nil, "For World PVP e.g.")
+    page.foeToastsUncooled = Switch(c, ns.L("Ignore toast cooldown for foes"), "foeToastsUncooled", INDENT,
+        nil, ns.L("For World PVP e.g."))
     DependsOn(page.foeToastsUncooled, function() return Saved().toasts or Saved().nearbyToasts end)
 
     -- The book closes so the card can be seen where it lies, and opens
@@ -36,15 +36,15 @@ local function BuildToasts(pane, c)
         ns.UI.CloseJournal()
         if not ns.UI.PlaceToast(Back) then Back() end
     end)
-    page.moveToast:SetText("Move the toast")
+    page.moveToast:SetText(ns.L("Move the toast"))
     c:Place(page.moveToast, 18)
 
     -- Last, so its list can take whatever room is left.
-    c:Heading("Nearby Toast Blacklist")
-    c:Hint("Toasts can get annoying for people you play with all the time.")
+    c:Heading(ns.L("Nearby Toast Blacklist"))
+    c:Hint(ns.L("Toasts can get annoying for people you play with all the time."))
 
     SettingsUI.Quiet.Build(pane, c)
 end
 
-SettingsUI.RegisterSection("toasts", { order = 22, label = "Toasts", parent = "interface",
-    about = "Who gets one, how often, and where", build = BuildToasts })
+SettingsUI.RegisterSection("toasts", { order = 22, label = ns.L("Toasts"), parent = "interface",
+    about = ns.L("Who gets one, how often, and where"), build = BuildToasts })

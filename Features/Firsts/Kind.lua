@@ -196,8 +196,8 @@ end
 
 ns.JourneyRecap.RegisterMoment("find", { order = 10, entry = "finds", field = "find", rank = 2,
     custom = {
-        label = "First Found",
-        heading = "A first found",
+        label = ns.L("First Found"),
+        heading = ns.L("A first found"),
         group = "other",
         -- A new card has to be a first of something, and most are a green.
         defaults = { what = "uncommon" },
@@ -217,18 +217,18 @@ ns.JourneyRecap.RegisterMoment("find", { order = 10, entry = "finds", field = "f
             local name = Firsts.Name(rec)
             local _, yours = Firsts.Words(rec.what)
             if name then return rec.what and (name .. ", " .. yours) or name end
-            return rec.what and (yours:gsub("^%l", string.upper)) or "A first found"
+            return rec.what and ns.UpperFirst(yours) or ns.L("A first found")
         end,
         fields = {
             -- Saved as `name`, beside a detected record's `link`. The hint tells
             -- what an empty line does: the form cannot show a detected item's
             -- name, which is in its link and not in a field of its own.
-            { key = "name", type = "text", label = "Item" },
+            { key = "name", type = "text", label = ns.L("Item") },
             -- j.firsts' own keys, so a card reads as a detected first does. The
             -- quality's word is the player's colour here, whatever the card's
             -- heading calls it.
-            { key = "what", type = "choice", values = { "uncommon", "rare", "epic", "bag", "shoulder" }, label = "First",
-                names = { uncommon = "Green", rare = "Blue", epic = "Purple", bag = "Bag", shoulder = "Shoulders" } },
+            { key = "what", type = "choice", values = { "uncommon", "rare", "epic", "bag", "shoulder" }, label = ns.L("First"),
+                names = { uncommon = ns.L("Green"), rare = ns.L("Blue"), epic = ns.L("Purple"), bag = ns.L("Bag"), shoulder = ns.L("Shoulders") } },
         },
     },
     gather = function(j, a, b, e)

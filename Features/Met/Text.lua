@@ -16,7 +16,7 @@ end
 -- The strip's top line. An automatic strip's is "with Tester", or "with someone"
 -- for a stranger (Text.MarginWho): the same, whether the name was picked or typed.
 function Met.Who(rec)
-    return "with " .. (Met.Name(rec) or "someone")
+    return ns.LF("with %s", Met.Name(rec) or ns.L("someone"))
 end
 
 -- The mark's tooltip, as a meeting's reads (Text.Meeting): who, what, when.
@@ -24,7 +24,7 @@ function Met.Tip(rec, now)
     local lines = {}
     if rec.what then lines[1] = rec.what end
     lines[#lines + 1] = When(rec.t, rec.level, now)
-    return "With " .. (Met.Name(rec) or "someone"), lines
+    return ns.LF("With %s", Met.Name(rec) or ns.L("someone")), lines
 end
 
 --------------------------------------------------------------------------
@@ -61,12 +61,12 @@ Text.RegisterCaption("met", {
     take = function(m) return m.met end,
     lead = { at = 15, say = function(list, c)
         local names = Unsaid(list, c)
-        if names[1] then return "With " .. List(names, MOST) end
+        if names[1] then return ns.LF("With %s", List(names, MOST)) end
         c.company = c.company or "met"
         return nil
     end },
     tail = { at = 5, say = function(list, c)
         local names = Unsaid(list, c)
-        return names[1] and ("with " .. List(names, MOST)) or nil
+        return names[1] and ns.LF("with %s", List(names, MOST)) or nil
     end },
 })

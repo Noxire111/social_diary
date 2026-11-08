@@ -21,21 +21,21 @@ local function Register()
     end
 
     local sign = CreateFrame("Frame")
-    local title = ns.UI.Chrome.Label(sign, "Social Diary", "GameFontHighlightLarge")
+    local title = ns.UI.Chrome.Label(sign, ns.L("Social Diary"), "GameFontHighlightLarge")
     title:SetPoint("TOPLEFT", 16, -16)
 
-    local text = ns.UI.Chrome.Label(sign, "The settings live in your journal now, behind the grey"
-        .. " ribbon at the bottom of the book.", "GameFontHighlight")
+    local text = ns.UI.Chrome.Label(sign, ns.L("The settings live in your journal now, behind the grey"
+        .. " ribbon at the bottom of the book."), "GameFontHighlight")
     text:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
     text:SetPoint("RIGHT", sign, "RIGHT", -16, 0)
 
-    sign.open = ns.UI.Chrome.Button(sign, "Open the settings", 170, function()
+    sign.open = ns.UI.Chrome.Button(sign, ns.L("Open the settings"), 170, function()
         CloseBlizzardSettings()
         ns.UI.ShowSettings()
     end)
     sign.open:SetPoint("TOPLEFT", text, "BOTTOMLEFT", 0, -14)
 
-    category = Settings.RegisterCanvasLayoutCategory(sign, "Social Diary")
+    category = Settings.RegisterCanvasLayoutCategory(sign, ns.L("Social Diary"))
     Settings.RegisterAddOnCategory(category)
 end
 

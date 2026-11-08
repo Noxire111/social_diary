@@ -121,10 +121,10 @@ local function Build()
     button:SetHighlightTexture(Style.Art("minimapHover"))
 
     Style.Tooltip(button, function()
-        return Style.TipList("Social Diary", {
-            "Click to open or close the journal.",
-            "Right-click to open the settings.",
-            "Drag to move this button.",
+        return Style.TipList(ns.L("Social Diary"), {
+            ns.L("Click to open or close the journal."),
+            ns.L("Right-click to open the settings."),
+            ns.L("Drag to move this button."),
         })
     end, "ANCHOR_LEFT")
 

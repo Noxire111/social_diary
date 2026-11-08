@@ -1,0 +1,46 @@
+-- Spanish text for the Dungeon area (LOC-2): a dungeon page's sentences (UI/Dungeon/Words.lua).
+-- The key is the English text exactly as the code passes it to ns.L / ns.LF;
+-- see Core/Locale.lua. A key left out shows in English.
+
+local addonName, ns = ...
+
+ns.Locale.Register("Dungeon", {
+    ["first"] = "primer",
+    ["second"] = "segundo",
+    ["third"] = "tercer",
+    ["fourth"] = "cuarto",
+    ["fifth"] = "quinto",
+    ["sixth"] = "sexto",
+    ["seventh"] = "séptimo",
+    ["eighth"] = "octavo",
+    ["ninth"] = "noveno",
+    ["tenth"] = "décimo",
+    ["%s times"] = "%s veces",
+    ["Wiped %s"] = "Todo el grupo cayó %s",
+    ["Tried %s"] = "Intentado %s",
+    ["killed on the %s try"] = "abatido al %s intento",
+    ["left standing"] = "quedó en pie",
+    ["Ran back %s"] = "Volviste corriendo %s",
+    ["as a ghost"] = "como fantasma",
+    ["dropped for %s"] = "cayó para %s",
+    ["dropped for %s on the way"] = "cayó para %s por el camino",
+    ["%s, dropped for %s"] = "%s, cayó para %s",
+    ["One item for someone else"] = "Un objeto para otra persona",
+    ["%s items for others"] = "%s objetos para otros",
+    ["On the way to %s"] = "De camino a %s",
+    ["After %s"] = "Tras %s",
+    ["On the way in"] = "De camino al interior",
+    ["Wiped on the way"] = "Caída total por el camino",
+    ["to %s and others"] = "a manos de %s y otros",
+    ["to %s"] = "a manos de %s",
+    ["Nearly wiped"] = "Casi caída total",
+    ["%s went down"] = "%s cayeron",
+    ["Reached by %s"] = "Alcanzado por %s",
+    ["%s snagged it"] = "%s se lo llevó",
+    ["%s from %s"] = "%s a %s",
+    ["%d against %d"] = "%d contra %d",
+    ["Finally! After %s drops, it's yours"] = "¡Por fin! Tras %s botines, es tuyo",
+    ["Finally!"] = "¡Por fin!",
+    ["%s rolled a %d"] = "%s sacó un %d",
+    ["on %s"] = "sobre %s",
+})
