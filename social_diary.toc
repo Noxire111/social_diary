@@ -6,7 +6,7 @@
 ## Title-esMX: Diario Social
 ## Notes-esMX: Recuerda a la gente que te encuentras en el mundo abierto.
 ## Author: social-diary
-## Version: 3.0.1
+## Version: 3.0.1-es
 ## SavedVariables: SocialDiaryDB
 ## SavedVariablesPerCharacter: SocialDiaryCharDB
 ## IconTexture: Interface\Icons\INV_Misc_Book_09
