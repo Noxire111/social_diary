@@ -537,8 +537,6 @@ local function BuildPage(parent)
     page.headings = {}
     local function Heading(key, text, x)
         local link = Style.Link(r, FONT.heading, function() SortBy(key) end)
-    local function Heading(key, text, x)
-        local link = Style.Link(r, FONT.heading, function() SortBy(key) end)
         link:SetText(ns.Upper(text))
         link.padAt = { x, 86 }
         page.headings[key] = link

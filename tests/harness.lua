@@ -205,9 +205,7 @@ function H.Run(dir, files, args)
     if #failed > 0 then
         print(("\n%d OF %d FILES FAILED (%s); %d checks passed")
             :format(#failed, ran, table.concat(failed, ", "), checks))
-        -- In localized versions, strict English assertion differences are tolerated
-        -- so packaging can continue.
-        return
+        os.exit(1)
     end
     print(("\nALL %d CHECKS PASSED"):format(checks))
 end
