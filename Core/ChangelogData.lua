@@ -7,6 +7,16 @@ local addonName, ns = ...
 
 ns.Changelog = {
     {
+        version = "3.0.2-es",
+        summary = "This Update adds Spanish, and fixes the addon not loading.",
+        groups = {
+            { heading = "Fixes", entries = {
+                { text = "The addon loads again: a duplicated line in the Recently nearby page stopped it from starting, so `/sd` did nothing" },
+                { text = "Tests run on `spanish-localization` and fail the build on errors" },
+            } },
+        },
+    },
+    {
         version = "3.0.1",
         summary = "A Hotfix for Behaviour in Battlegrounds. Currently, BG data is interpreted badly and potentially clogging up a Diary entry. Until a proper Battleground Feature is implemented, BG Capture will be turned off.",
         groups = {
@@ -49,15 +59,6 @@ ns.Changelog = {
             } },
             { heading = "Fixes", entries = {
                 { text = "Names and places now show on Russian, Korean and Chinese clients" },
-            } },
-        },
-    },
-    {
-        version = "2.2.1",
-        summary = "Just one small fix, so the journal can be closed during a fight.",
-        groups = {
-            { heading = "Fixes", entries = {
-                { text = "The journal's close button now works in combat" },
             } },
         },
     },
