@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.2-es]
+
+This Update adds Spanish, and fixes the addon not loading.
+
+### Fixes
+
+- The addon loads again: a duplicated line in the Recently nearby page stopped it from starting, so `/sd` did nothing
+- Tests run on `spanish-localization` and fail the build on errors
+
 ## [Unreleased]
 
 This Update adds Spanish.
