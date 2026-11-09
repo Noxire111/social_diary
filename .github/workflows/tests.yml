@@ -6,7 +6,7 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, spanish-localization]
   pull_request:
 
 jobs:
